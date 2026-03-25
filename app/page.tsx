@@ -8,7 +8,9 @@ export default function ChatBotPremium() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const chatEndRef = useRef(null);
+
+  // ✅ Fix: add explicit type
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () =>
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

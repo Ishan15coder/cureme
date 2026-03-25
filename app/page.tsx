@@ -39,16 +39,16 @@ Give:
     <p className="text-sm text-gray-200 text-center mb-4">
   Your AI-powered health companion
 </p>
-        <select
-  className="w-full p-3 mb-4 rounded-lg bg-white/20 text-white placeholder-gray-200 border border-white/30 focus:outline-none"
+       <select
+  className="w-full p-3 mb-4 rounded-lg bg-white/20 text-white border border-white/30 appearance-none"
   value={disease}
   onChange={(e) => setDisease(e.target.value)}
 >
-  <option value="">Select Condition</option>
-  <option value="Diabetes">Diabetes</option>
-  <option value="PCOS">PCOS</option>
-  <option value="Hypertension">Hypertension</option>
-  <option value="Obesity">Obesity</option>
+  <option value="" className="text-black">Select Condition</option>
+  <option value="Diabetes" className="text-black">Diabetes</option>
+  <option value="PCOS" className="text-black">PCOS</option>
+  <option value="Hypertension" className="text-black">Hypertension</option>
+  <option value="Obesity" className="text-black">Obesity</option>
 </select>
 
         <input

@@ -35,8 +35,9 @@ export default function ChatBotPremium() {
   const [conditionOpen, setConditionOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  const scrollToBottom = () =>
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+ const scrollToBottom = () => {
+  chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+};
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -133,46 +134,65 @@ Respond now:`;
           to   { transform: translate(-60px, -80px); }
         }
 
-        /* PANEL */
-        .cure-panel {
+        /* ANIMATED BORDER — outer wrapper */
+        @property --angle {
+          syntax: '<angle>';
+          initial-value: 0deg;
+          inherits: false;
+        }
+
+        @keyframes borderSpin {
+          0%   { --angle: 0deg; }
+          100% { --angle: 360deg; }
+        }
+
+        .cure-panel-wrapper {
           position: relative;
           z-index: 1;
           width: 100%;
           max-width: 480px;
           height: 92vh;
           max-height: 800px;
-          display: flex;
-          flex-direction: column;
-          background: rgba(255,255,255,0.035);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 28px;
-          overflow: hidden;
-          backdrop-filter: blur(40px);
-          -webkit-backdrop-filter: blur(40px);
-          box-shadow:
-            0 0 0 1px rgba(255,255,255,0.04) inset,
-            0 32px 80px rgba(0,0,0,0.7),
-            0 0 80px rgba(90,40,200,0.12);
           margin: 20px;
+          border-radius: 28px;
+          padding: 2px;
+          background: conic-gradient(
+            from var(--angle) at 50% 50%,
+            rgba(160, 100, 255, 0.9) 0deg,
+            rgba(60, 180, 255, 0.9) 90deg,
+            rgba(255, 100, 220, 0.8) 180deg,
+            rgba(60, 180, 255, 0.9) 270deg,
+            rgba(160, 100, 255, 0.9) 360deg
+          );
+          animation: borderSpin 4s linear infinite;
         }
 
-        .cure-panel::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(160,100,255,0.6), rgba(60,180,255,0.6), transparent);
-          z-index: 2;
-        }
-
-        /* DESKTOP: horizontal split */
         @media (min-width: 1024px) {
-          .cure-panel {
-            flex-direction: row;
+          .cure-panel-wrapper {
             max-width: 1100px;
             width: 95vw;
             height: 85vh;
             max-height: 700px;
+          }
+        }
+
+        /* PANEL — inner content area */
+        .cure-panel {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          background: #0d0d1a;
+          border-radius: 26px;
+          overflow: hidden;
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
+          box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+        }
+
+        @media (min-width: 1024px) {
+          .cure-panel {
+            flex-direction: row;
           }
         }
 
@@ -339,12 +359,12 @@ Respond now:`;
         /* Chat area */
         .cure-chat {
           flex: 1;
-          overflow-y: auto;
           padding: 20px 20px;
           display: flex;
           flex-direction: column;
           gap: 12px;
           scroll-behavior: smooth;
+  overflow-y: scroll;
         }
         .cure-chat::-webkit-scrollbar { width: 4px; }
         .cure-chat::-webkit-scrollbar-track { background: transparent; }
@@ -559,130 +579,137 @@ Respond now:`;
       `}</style>
 
       <div className="cure-root">
-        <div className="cure-panel">
 
-          {/* ── SIDEBAR ── */}
-          <div className="cure-sidebar">
+        {/* Outer wrapper handles the animated border */}
+        <div className="cure-panel-wrapper">
 
-            <div className="cure-header">
-              <div className="cure-logo">🩺</div>
-              <div className="cure-header-text">
-                <h1>CureMe AI</h1>
-                <p>AI Health Companion</p>
-              </div>
-              <div className="cure-status">
-                <div className="cure-status-dot" />
-                Online
-              </div>
-            </div>
+          {/* Inner panel holds all the content */}
+          <div className="cure-panel">
 
-            <div className="cure-condition-wrap">
-              <div className="cure-condition-label">Your Condition</div>
-              <button
-                className={`cure-condition-btn ${conditionOpen ? "open" : ""}`}
-                onClick={() => setConditionOpen((v) => !v)}
-              >
-                <span>{selected.icon}</span>
-                <span>{selected.label}</span>
-                <span>▾</span>
-              </button>
+            {/* ── SIDEBAR ── */}
+            <div className="cure-sidebar">
 
-              {conditionOpen && (
-                <div className="cure-condition-dropdown">
-                  {CONDITIONS.map((c) => (
-                    <div
-                      key={c.value}
-                      className={`cure-condition-option ${disease === c.value ? "active" : ""}`}
-                      onClick={() => {
-                        setDisease(c.value);
-                        setConditionOpen(false);
-                      }}
-                    >
-                      <span>{c.icon}</span>
-                      <span>{c.label}</span>
-                    </div>
-                  ))}
+              <div className="cure-header">
+                <div className="cure-logo">🩺</div>
+                <div className="cure-header-text">
+                  <h1>CureMe AI</h1>
+                  <p>AI Health Companion</p>
                 </div>
-              )}
-            </div>
+                <div className="cure-status">
+                  <div className="cure-status-dot" />
+                  Online
+                </div>
+              </div>
 
-          </div>
-          {/* ── END SIDEBAR ── */}
+              <div className="cure-condition-wrap">
+                <div className="cure-condition-label">Your Condition</div>
+                <button
+                  className={`cure-condition-btn ${conditionOpen ? "open" : ""}`}
+                  onClick={() => setConditionOpen((v) => !v)}
+                >
+                  <span>{selected.icon}</span>
+                  <span>{selected.label}</span>
+                  <span>▾</span>
+                </button>
 
-          {/* ── MAIN ── */}
-          <div className="cure-main">
-
-            <div className="cure-chat">
-              {messages.length === 0 && !loading ? (
-                <div className="cure-empty">
-                  <div className="cure-empty-icon">✦</div>
-                  <h3>How can I help you?</h3>
-                  <p>Ask anything about your health, symptoms, or diet.</p>
-                  <div className="cure-chips">
-                    {["What should I eat?", "Any side effects?", "Daily routine tips"].map((q) => (
-                      <button
-                        key={q}
-                        className="cure-chip"
-                        onClick={() => setInput(q)}
+                {conditionOpen && (
+                  <div className="cure-condition-dropdown">
+                    {CONDITIONS.map((c) => (
+                      <div
+                        key={c.value}
+                        className={`cure-condition-option ${disease === c.value ? "active" : ""}`}
+                        onClick={() => {
+                          setDisease(c.value);
+                          setConditionOpen(false);
+                        }}
                       >
-                        {q}
-                      </button>
+                        <span>{c.icon}</span>
+                        <span>{c.label}</span>
+                      </div>
                     ))}
                   </div>
-                </div>
-              ) : (
-                <>
-                  {messages.map((msg, idx) => (
-                    <div key={idx} className={`cure-bubble-row ${msg.role}`}>
-                      {msg.role === "assistant" && (
+                )}
+              </div>
+
+            </div>
+            {/* ── END SIDEBAR ── */}
+
+            {/* ── MAIN ── */}
+            <div className="cure-main">
+
+              <div className="cure-chat">
+                {messages.length === 0 && !loading ? (
+                  <div className="cure-empty">
+                    <div className="cure-empty-icon">✦</div>
+                    <h3>How can I help you?</h3>
+                    <p>Ask anything about your health, symptoms, or diet.</p>
+                    <div className="cure-chips">
+                      {["What should I eat?", "Any side effects?", "Daily routine tips"].map((q) => (
+                        <button
+                          key={q}
+                          className="cure-chip"
+                          onClick={() => setInput(q)}
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((msg, idx) => (
+                      <div key={idx} className={`cure-bubble-row ${msg.role}`}>
+                        {msg.role === "assistant" && (
+                          <div className="cure-avatar ai">✦</div>
+                        )}
+                        <div className={`cure-bubble ${msg.role}`}>
+                          <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                        </div>
+                      </div>
+                    ))}
+
+                    {loading && (
+                      <div className="cure-bubble-row assistant">
                         <div className="cure-avatar ai">✦</div>
-                      )}
-                      <div className={`cure-bubble ${msg.role}`}>
-                        <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                        <div className="cure-typing">
+                          <span /><span /><span />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-
-                  {loading && (
-                    <div className="cure-bubble-row assistant">
-                      <div className="cure-avatar ai">✦</div>
-                      <div className="cure-typing">
-                        <span /><span /><span />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            <div className="cure-input-wrap">
-              <div className="cure-input-row">
-                <input
-                  className="cure-input"
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Ask your health question…"
-                />
-                <button
-                  className="cure-send-btn"
-                  onClick={handleSend}
-                  disabled={loading || !input.trim()}
-                >
-                  ↑
-                </button>
+                    )}
+                  </>
+                )}
+                <div ref={chatEndRef} />
               </div>
-              <div className="cure-footer-note">
-                For informational purposes only · Not a substitute for professional advice
+
+              <div className="cure-input-wrap">
+                <div className="cure-input-row">
+                  <input
+                    className="cure-input"
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    placeholder="Ask your health question…"
+                  />
+                  <button
+                    className="cure-send-btn"
+                    onClick={handleSend}
+                    disabled={loading || !input.trim()}
+                  >
+                    ↑
+                  </button>
+                </div>
+                <div className="cure-footer-note">
+                  For informational purposes only · Not a substitute for professional advice
+                </div>
               </div>
+
             </div>
+            {/* ── END MAIN ── */}
 
           </div>
-          {/* ── END MAIN ── */}
-
         </div>
+
       </div>
     </>
   );

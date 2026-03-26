@@ -22,7 +22,7 @@ function formatMessage(text: string): string {
     .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
     .replace(/^([A-Za-z][^:\n]+):$/gm, "<strong>$1:</strong>")
     .replace(/^- (.+)/gm, "<li>$1</li>")
-    .replace(/(<li>.*?<\/li>)(\s*<li>.*?<\/li>)*/gs, (match) => `<ul>${match}</ul>`)
+    .replace(/(<li>[\s\S]*?<\/li>)(\s*<li>[\s\S]*?<\/li>)*/g, (match) => `<ul>${match}</ul>`)
     .replace(/\n{2,}/g, "<br/><br/>")
     .replace(/\n/g, "<br/>");
 }

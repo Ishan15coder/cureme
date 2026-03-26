@@ -576,6 +576,26 @@ Respond now:`;
           margin-top: 8px;
           letter-spacing: 0.03em;
         }
+           @media (max-width: 1023px) {
+          .cure-panel-wrapper {
+            width: 100%;
+            max-width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            padding: 2px;
+          }
+
+          .cure-panel {
+            border-radius: 0;
+          }
+
+          .cure-root::before,
+          .cure-root::after {
+            display: none;
+          }
+        }
       `}</style>
 
       <div className="cure-root">

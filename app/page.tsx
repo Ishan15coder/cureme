@@ -569,14 +569,102 @@ export default function LandingPage() {
         }
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
+        /* ─── MOBILE FIXES ─────────────────────────────────────────── */
         @media (max-width: 768px) {
-          nav { padding: 16px 20px; }
+          nav {
+            padding: 14px 16px;
+          }
           .nav-links { display: none; }
-          .how-steps::before { display: none; }
+
+          /* Show only logo + open-app button in nav */
+          .nav-mobile-cta {
+            display: inline-flex !important;
+          }
+
+          /* Hero: compact so it fits one screen */
+          .hero {
+            min-height: 100svh;
+            padding: 80px 20px 40px;
+            justify-content: center;
+            gap: 0;
+          }
+          .hero-badge {
+            font-size: 0.62rem;
+            padding: 5px 12px;
+            margin-bottom: 20px;
+            letter-spacing: 0.06em;
+          }
+          .hero-title {
+            font-size: clamp(2.4rem, 11vw, 3.2rem);
+            line-height: 1.08;
+          }
+          .hero-sub {
+            font-size: 0.85rem;
+            margin: 16px auto 28px;
+            line-height: 1.6;
+          }
+          .hero-actions {
+            gap: 10px;
+          }
+          .btn-primary, .btn-ghost {
+            padding: 12px 24px;
+            font-size: 0.85rem;
+            border-radius: 12px;
+          }
+
+          /* Hide the chat preview on mobile to save space */
+          .hero-visual { display: none; }
+
+          /* Sections: tighter vertical rhythm */
+          .features { padding: 60px 16px; }
+          .features-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+          }
+          .feature-card { padding: 22px 20px; }
+          .feature-icon { width: 40px; height: 40px; font-size: 18px; margin-bottom: 14px; }
+          .feature-title { font-size: 1rem; }
+          .feature-desc { font-size: 0.78rem; }
+          .section-title { font-size: clamp(1.6rem, 7vw, 2.2rem); margin-bottom: 36px; }
+
+          .conditions { padding: 50px 16px; }
+          .conditions-grid { gap: 10px; }
+          .condition-pill { padding: 10px 18px; font-size: 0.8rem; }
+
+          .how { padding: 60px 16px; }
           .how-steps { gap: 32px; }
-          .cta-card { padding: 40px 24px; }
-          footer { flex-direction: column; text-align: center; padding: 32px 20px; }
-          .footer-links { justify-content: center; }
+          .how-steps::before { display: none; }
+          .how-step { padding: 0 12px; }
+          .how-step-num { width: 52px; height: 52px; font-size: 0.95rem; }
+
+          .stats { padding: 40px 16px; }
+          .stats-inner { border-radius: 16px; }
+          .stat { min-width: 120px; padding: 24px 16px; }
+          .stat-num { font-size: 2rem; }
+          .stat-label { font-size: 0.65rem; }
+
+          .cta-section { padding: 60px 16px 80px; }
+          .cta-card { padding: 36px 20px; border-radius: 20px; }
+          .cta-card h2 { font-size: clamp(1.5rem, 7vw, 2rem); }
+          .cta-card p { font-size: 0.82rem; margin-bottom: 24px; }
+          .cta-card .btn-primary { padding: 14px 32px; font-size: 0.9rem; }
+
+          footer {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 28px 16px;
+            gap: 12px;
+          }
+          .footer-links { justify-content: center; gap: 16px; }
+          .footer-note { font-size: 0.65rem; }
+        }
+
+        /* Extra small phones */
+        @media (max-width: 380px) {
+          .hero-title { font-size: 2.1rem; }
+          .hero-sub { font-size: 0.78rem; }
+          .btn-primary, .btn-ghost { padding: 11px 18px; font-size: 0.8rem; }
         }
       `}</style>
 
@@ -597,6 +685,8 @@ export default function LandingPage() {
           <li><a href="#how">How it works</a></li>
           <li><a href="./chat" className="nav-cta">Open App ↗</a></li>
         </ul>
+        {/* Mobile-only CTA in nav */}
+        <a href="./chat" className="nav-cta nav-mobile-cta" style={{ display: 'none' }}>Open App ↗</a>
       </nav>
 
       <section className="hero">

@@ -59,19 +59,20 @@ export default function LoginPage() {
   };
 
   // AFTER
+// AFTER
 const friendlyError = (code: string) => {
-    const map = {
-      "auth/invalid-email": "Please enter a valid email address.",
-      "auth/user-not-found": "No account found with that email.",
-      "auth/wrong-password": "Incorrect password. Please try again.",
-      "auth/email-already-in-use": "An account with this email already exists.",
-      "auth/weak-password": "Password must be at least 6 characters.",
-      "auth/popup-closed-by-user": "Google sign-in was cancelled.",
-      "auth/too-many-requests": "Too many attempts. Please try again later.",
-      "auth/invalid-credential": "Invalid credentials. Please check and try again.",
-    };
-    return map[code] || "Something went wrong. Please try again.";
+  const map: Record<string, string> = {
+    "auth/invalid-email": "Please enter a valid email address.",
+    "auth/user-not-found": "No account found with that email.",
+    "auth/wrong-password": "...",
+    "auth/email-already-in-use": "...",
+    "auth/weak-password": "...",
+    "auth/popup-closed-by-user": "...",
+    "auth/too-many-requests": "...",
+    "auth/invalid-credential": "Invalid credentials. Please check and try again.",
   };
+  return map[code] || "Something went wrong. Please try again.";
+};
 
   // ── Email / password ───────────────────────────────────────────────────────
   const handleEmailAuth = async (e) => {

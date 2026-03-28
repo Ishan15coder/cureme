@@ -287,37 +287,83 @@ const [toast, setToast] = useState<{ type: string; message: string } | null>(nul
   .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease,transform 0.6s ease; }
   .reveal.visible { opacity: 1; transform: translateY(0); }
 
-  @media (max-width: 768px) {
-    nav { padding: 14px 16px; }
-    .nav-links { display: none !important; }
-    .mobile-nav-auth { display: flex !important; align-items: center; gap: 10px; }
-    .hero { min-height: 100svh; padding: 80px 20px 40px; }
-    .hero-title { font-size: clamp(2.4rem,11vw,3.2rem); line-height: 1.08; }
-    .hero-sub { font-size: 0.85rem; margin: 16px auto 28px; }
-    .btn-primary,.btn-ghost { padding: 12px 24px; font-size: 0.85rem; border-radius: 12px; }
-    .hero-visual { display: none; }
-    .features { padding: 60px 16px; }
-    .features-grid { grid-template-columns: 1fr; gap: 14px; }
-    .feature-card { padding: 22px 20px; }
-    .section-title { font-size: clamp(1.6rem,7vw,2.2rem); margin-bottom: 36px; }
-    .conditions { padding: 50px 16px; }
-    .how { padding: 60px 16px; }
-    .how-steps { gap: 32px; }
-    .how-steps::before { display: none; }
-    .stats { padding: 40px 16px; }
-    .stat { min-width: 120px; padding: 24px 16px; }
-    .stat-num { font-size: 2rem; }
-    .cta-section { padding: 60px 16px 80px; }
-    .cta-card { padding: 36px 20px; border-radius: 20px; }
-    footer { flex-direction: column; align-items: center; text-align: center; padding: 28px 16px; gap: 12px; }
-    .footer-links { justify-content: center; }
-    .user-avatar-btn .user-name { display: none; }
-    .toast { font-size: 0.75rem; padding: 11px 18px; max-width: 90vw; white-space: normal; text-align: center; }
-  }
-  @media (max-width: 380px) {
-    .hero-title { font-size: 2.1rem; }
-    .btn-primary,.btn-ghost { padding: 11px 18px; font-size: 0.8rem; }
-  }
+ @media (max-width: 768px) {
+  /* NAV */
+  nav { padding: 12px 16px; }
+  .nav-links { display: none !important; }
+  .mobile-nav-auth { display: flex !important; align-items: center; gap: 8px; }
+  .nav-cta { padding: 8px 14px; font-size: 0.75rem !important; }
+  .nav-login-ghost { padding: 8px 12px; font-size: 0.75rem !important; }
+
+  /* HERO */
+  .hero { min-height: 100svh; padding: 110px 20px 60px; text-align: center; }
+  .hero-user-pill { font-size: 0.68rem; padding: 5px 12px 5px 8px; }
+  .hero-badge { font-size: 0.65rem; padding: 5px 12px; }
+  .hero-title { font-size: clamp(2.2rem, 10vw, 3rem); line-height: 1.08; }
+  .hero-sub { font-size: 0.85rem; margin: 16px auto 28px; max-width: 100%; }
+  .hero-actions { flex-direction: column; align-items: center; width: 100%; gap: 10px; }
+  .btn-primary, .btn-ghost { width: 100%; justify-content: center; padding: 13px 24px; font-size: 0.88rem; border-radius: 12px; }
+  .hero-visual { display: none; }
+
+  /* FEATURES */
+  .features { padding: 60px 16px; }
+  .features-grid { grid-template-columns: 1fr; gap: 12px; }
+  .feature-card { padding: 20px 18px; }
+  .feature-icon { width: 40px; height: 40px; border-radius: 12px; margin-bottom: 14px; }
+  .section-label { font-size: 0.6rem; }
+  .section-title { font-size: clamp(1.5rem, 7vw, 2rem); margin-bottom: 32px; }
+
+  /* CONDITIONS */
+  .conditions { padding: 50px 16px; }
+  .conditions-grid { gap: 10px; }
+  .condition-pill { padding: 10px 16px; font-size: 0.8rem; }
+
+  /* HOW */
+  .how { padding: 60px 16px; }
+  .how-steps { grid-template-columns: 1fr; gap: 28px; }
+  .how-steps::before { display: none; }
+  .how-step { padding: 0 16px; }
+
+  /* STATS */
+  .stats { padding: 40px 16px; }
+  .stats-inner { flex-direction: column; gap: 1px; }
+  .stat { min-width: unset; width: 100%; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; text-align: left; }
+  .stat-num { font-size: 1.8rem; }
+  .stat-label { margin-top: 0; margin-left: 12px; font-size: 0.78rem; }
+
+  /* CTA */
+  .cta-section { padding: 60px 16px 80px; }
+  .cta-section::before { width: 300px; height: 200px; }
+  .cta-card { padding: 36px 20px; border-radius: 20px; }
+  .cta-card h2 { font-size: clamp(1.5rem, 6vw, 2rem); }
+  .cta-card .btn-primary { width: 100%; justify-content: center; }
+
+  /* FOOTER */
+  footer { flex-direction: column; align-items: center; text-align: center; padding: 28px 16px; gap: 12px; }
+  .footer-links { justify-content: center; flex-wrap: wrap; gap: 16px; }
+  .footer-note { font-size: 0.68rem; }
+
+  /* AUTH */
+  .user-avatar-btn .user-name { display: none; }
+  .user-dropdown { right: -8px; }
+
+  /* TOAST */
+  .toast { font-size: 0.75rem; padding: 11px 18px; max-width: 90vw; white-space: normal; text-align: center; bottom: 16px; }
+}
+
+@media (max-width: 480px) {
+  .hero-title { font-size: clamp(1.9rem, 9vw, 2.4rem); }
+  .conditions-grid { flex-direction: column; align-items: stretch; }
+  .condition-pill { justify-content: center; }
+  .stats-inner { border-radius: 16px; }
+}
+
+@media (max-width: 380px) {
+  .hero { padding-top: 100px; }
+  .hero-title { font-size: 1.85rem; }
+  .btn-primary, .btn-ghost { padding: 11px 18px; font-size: 0.8rem; }
+  .nav-cta { padding: 7px 10px; font-size: 0.7rem !important; }
+}
 `}</style>
 
       <div className="blobs">

@@ -1,823 +1,736 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CureMe AI — Your AI Health Companion</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Sora:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-<style>
-  :root {
-    --ink: #06060e;
-    --surface: #0d0d1a;
-    --surface2: #13121f;
-    --violet: #7c3aed;
-    --indigo: #4f46e5;
-    --cyan: #2563eb;
-    --rose: #e879a0;
-    --text: rgba(255,255,255,0.88);
-    --muted: rgba(255,255,255,0.4);
-    --faint: rgba(255,255,255,0.06);
-    --border: rgba(255,255,255,0.1);
-  }
+"use client";
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+import { useState, useRef, useEffect } from "react";
+import { askAI } from "@/lib/gemini";
 
-  html { scroll-behavior: smooth; }
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
 
-  body {
-    background: var(--ink);
-    color: var(--text);
-    font-family: 'Sora', sans-serif;
-    overflow-x: hidden;
-    line-height: 1.6;
-  }
+const CONDITIONS = [
+  { value: "", label: "No Condition Selected", icon: "◎" },
+  { value: "Diabetes", label: "Diabetes", icon: "🩸" },
+  { value: "PCOS", label: "PCOS", icon: "🌸" },
+  { value: "Hypertension", label: "Hypertension", icon: "💓" },
+  { value: "Obesity", label: "Obesity", icon: "⚖️" },
+];
 
-  /* ─── NOISE TEXTURE ─────────────────────── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.5;
-  }
+function formatMessage(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
+    .replace(/^([A-Za-z][^:\n]+):$/gm, "<strong>$1:</strong>")
+    .replace(/^- (.+)/gm, "<li>$1</li>")
+    .replace(/(<li>[\s\S]*?<\/li>)(\s*<li>[\s\S]*?<\/li>)*/g, (match) => `<ul>${match}</ul>`)
+    .replace(/\n{2,}/g, "<br/><br/>")
+    .replace(/\n/g, "<br/>");
+}
 
-  /* ─── AMBIENT BLOBS ─────────────────────── */
-  .blobs {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    overflow: hidden;
-  }
-  .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    opacity: 0.18;
-  }
-  .blob-1 { width: 700px; height: 700px; background: #7c3aed; top: -200px; left: -200px; animation: float1 18s ease-in-out infinite alternate; }
-  .blob-2 { width: 500px; height: 500px; background: #2563eb; bottom: -150px; right: -150px; animation: float2 22s ease-in-out infinite alternate; }
-  .blob-3 { width: 400px; height: 400px; background: #e879a0; top: 40%; left: 50%; animation: float3 15s ease-in-out infinite alternate; }
+export default function ChatBotPremium() {
+  const [disease, setDisease] = useState<string>("");
+  const [input, setInput] = useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [conditionOpen, setConditionOpen] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  @keyframes float1 { to { transform: translate(100px, 80px); } }
-  @keyframes float2 { to { transform: translate(-80px, -100px); } }
-  @keyframes float3 { to { transform: translate(60px, -60px); } }
+ const scrollToBottom = () => {
+  chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+};
 
-  /* ─── NAV ───────────────────────────────── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 48px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    background: rgba(6,6,14,0.6);
-  }
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
-  .nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.3rem;
-    color: #fff;
-    text-decoration: none;
-  }
-  .nav-logo-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--violet), var(--cyan));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 4px 14px rgba(124,58,237,0.4);
-  }
+    const userMessage: Message = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
 
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-    list-style: none;
-  }
-  .nav-links a {
-    color: var(--muted);
-    text-decoration: none;
-    font-size: 0.82rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    transition: color 0.2s;
-  }
-  .nav-links a:hover { color: #fff; }
+    const prompt = `You are CureMe, a warm and knowledgeable AI health assistant.
 
-  .nav-cta {
-    padding: 9px 22px;
-    background: linear-gradient(135deg, var(--violet), var(--indigo));
-    border-radius: 10px;
-    color: #fff !important;
-    font-weight: 600 !important;
-    font-size: 0.8rem !important;
-    box-shadow: 0 4px 14px rgba(124,58,237,0.4);
-    transition: all 0.2s !important;
-  }
-  .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.55) !important; }
+${disease ? `The user has: ${disease}.` : ""}
+User asks: "${input}"
 
-  /* ─── SECTIONS ──────────────────────────── */
-  section { position: relative; z-index: 1; }
+Reply rules:
+- Use **bold** for section headers
+- Use - bullet points for lists
+- Only include sections that are relevant to the question
+- If the question is simple, give a simple answer — don't force all sections
+- Max 120 words
+- Tone: clear, caring, non-alarming
+- End with one short disclaimer line in italics like: *Always consult your doctor for personalized advice.*
 
-  /* ─── HERO ──────────────────────────────── */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 120px 24px 80px;
-  }
+Respond now:`;
 
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 16px;
-    background: rgba(124,58,237,0.15);
-    border: 1px solid rgba(124,58,237,0.35);
-    border-radius: 100px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #a78bfa;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 32px;
-    animation: fadeUp 0.6s ease both;
-  }
-  .hero-badge-dot {
-    width: 6px; height: 6px;
-    background: #22c55e;
-    border-radius: 50%;
-    box-shadow: 0 0 6px #22c55e;
-    animation: pulse-dot 2s ease-in-out infinite;
-  }
-  @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+    try {
+      const aiResponse = await askAI(prompt);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: aiResponse },
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, something went wrong. ❌" },
+      ]);
+    }
 
-  .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(3rem, 8vw, 6.5rem);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    color: #fff;
-    animation: fadeUp 0.7s 0.1s ease both;
-  }
-  .hero-title em {
-    font-style: italic;
-    background: linear-gradient(135deg, #a78bfa, #60a5fa, #f472b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+    setLoading(false);
+  };
 
-  .hero-sub {
-    max-width: 520px;
-    margin: 24px auto 48px;
-    font-size: 1rem;
-    color: var(--muted);
-    font-weight: 400;
-    line-height: 1.7;
-    animation: fadeUp 0.7s 0.2s ease both;
-  }
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
 
-  .hero-actions {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    animation: fadeUp 0.7s 0.3s ease both;
-  }
+  const selected = CONDITIONS.find((c) => c.value === disease) || CONDITIONS[0];
 
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 32px;
-    background: linear-gradient(135deg, var(--violet), var(--indigo));
-    border-radius: 14px;
-    color: #fff;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 6px 24px rgba(124,58,237,0.45);
-    transition: all 0.25s;
-    cursor: pointer;
-    border: none;
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(124,58,237,0.6); }
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
 
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 32px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    color: rgba(255,255,255,0.7);
-    font-family: 'Sora', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.25s;
-    cursor: pointer;
-  }
-  .btn-ghost:hover { border-color: rgba(255,255,255,0.25); color: #fff; background: rgba(255,255,255,0.04); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Hero visual — chat mockup */
-  .hero-visual {
-    margin-top: 80px;
-    width: 100%;
-    max-width: 700px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
-    animation: fadeUp 0.8s 0.4s ease both;
-  }
-  .hero-visual-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--faint);
-    background: rgba(255,255,255,0.02);
-  }
-  .hv-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .hv-dot:nth-child(1) { background: #ff5f57; }
-  .hv-dot:nth-child(2) { background: #ffbd2e; }
-  .hv-dot:nth-child(3) { background: #28c840; }
-  .hv-label {
-    margin-left: auto;
-    font-size: 0.7rem;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-  }
-  .hero-visual-chat {
-    padding: 24px 24px 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .hv-msg {
-    display: flex;
-    gap: 10px;
-    align-items: flex-end;
-    opacity: 0;
-    animation: fadeUp 0.5s ease both;
-  }
-  .hv-msg.user { flex-direction: row-reverse; }
-  .hv-msg:nth-child(1) { animation-delay: 1s; }
-  .hv-msg:nth-child(2) { animation-delay: 1.6s; }
-  .hv-msg:nth-child(3) { animation-delay: 2.2s; }
-  .hv-msg:nth-child(4) { animation-delay: 2.8s; }
+        .cure-root {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #06060e;
+          font-family: 'Sora', sans-serif;
+          overflow: hidden;
+          position: relative;
+        }
 
-  .hv-avatar {
-    width: 28px; height: 28px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  .hv-avatar.ai { background: linear-gradient(135deg, var(--violet), var(--cyan)); }
-  .hv-avatar.user { background: rgba(255,255,255,0.1); }
+        .cure-root::before,
+        .cure-root::after {
+          content: '';
+          position: fixed;
+          border-radius: 50%;
+          filter: blur(120px);
+          pointer-events: none;
+          z-index: 0;
+        }
+        .cure-root::before {
+          width: 600px; height: 600px;
+          background: radial-gradient(circle, #2d0a6e55 0%, transparent 70%);
+          top: -150px; left: -150px;
+          animation: drift1 12s ease-in-out infinite alternate;
+        }
+        .cure-root::after {
+          width: 500px; height: 500px;
+          background: radial-gradient(circle, #0a3d6255 0%, transparent 70%);
+          bottom: -100px; right: -100px;
+          animation: drift2 14s ease-in-out infinite alternate;
+        }
 
-  .hv-bubble {
-    padding: 10px 15px;
-    border-radius: 16px;
-    font-size: 0.8rem;
-    line-height: 1.55;
-    max-width: 75%;
-  }
-  .hv-bubble.ai {
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.85);
-    border-bottom-left-radius: 4px;
-  }
-  .hv-bubble.user {
-    background: linear-gradient(135deg, var(--violet), var(--indigo));
-    color: #fff;
-    border-bottom-right-radius: 4px;
-    text-align: right;
-  }
+        @keyframes drift1 {
+          from { transform: translate(0, 0); }
+          to   { transform: translate(80px, 60px); }
+        }
+        @keyframes drift2 {
+          from { transform: translate(0, 0); }
+          to   { transform: translate(-60px, -80px); }
+        }
 
-  /* ─── FEATURES ──────────────────────────── */
-  .features {
-    padding: 100px 24px;
-  }
-  .section-label {
-    text-align: center;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #a78bfa;
-    margin-bottom: 16px;
-  }
-  .section-title {
-    text-align: center;
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    color: #fff;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin-bottom: 60px;
-  }
+        /* ANIMATED BORDER — outer wrapper */
+        @property --angle {
+          syntax: '<angle>';
+          initial-value: 0deg;
+          inherits: false;
+        }
 
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    max-width: 1000px;
-    margin: 0 auto;
-  }
+        @keyframes borderSpin {
+          0%   { --angle: 0deg; }
+          100% { --angle: 360deg; }
+        }
 
-  .feature-card {
-    padding: 32px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-  .feature-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 30% 30%, rgba(124,58,237,0.08), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .feature-card:hover { transform: translateY(-4px); border-color: rgba(124,58,237,0.3); }
-  .feature-card:hover::before { opacity: 1; }
+        .cure-panel-wrapper {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+          max-width: 480px;
+          height: 92vh;
+          max-height: 800px;
+          margin: 20px;
+          border-radius: 28px;
+          padding: 2px;
+          background: conic-gradient(
+            from var(--angle) at 50% 50%,
+            rgba(160, 100, 255, 0.9) 0deg,
+            rgba(60, 180, 255, 0.9) 90deg,
+            rgba(255, 100, 220, 0.8) 180deg,
+            rgba(60, 180, 255, 0.9) 270deg,
+            rgba(160, 100, 255, 0.9) 360deg
+          );
+          animation: borderSpin 4s linear infinite;
+        }
 
-  .feature-icon {
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    margin-bottom: 20px;
-  }
-  .feature-icon.violet { background: rgba(124,58,237,0.2); }
-  .feature-icon.cyan { background: rgba(37,99,235,0.2); }
-  .feature-icon.rose { background: rgba(232,121,160,0.2); }
-  .feature-icon.green { background: rgba(34,197,94,0.2); }
+        @media (min-width: 1024px) {
+          .cure-panel-wrapper {
+            max-width: 1100px;
+            width: 95vw;
+            height: 85vh;
+            max-height: 700px;
+          }
+        }
 
-  .feature-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.15rem;
-    color: #fff;
-    margin-bottom: 10px;
-  }
-  .feature-desc {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.7;
-  }
+        /* PANEL — inner content area */
+        .cure-panel {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          background: #0d0d1a;
+          border-radius: 26px;
+          overflow: hidden;
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
+          box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+        }
 
-  /* ─── CONDITIONS ────────────────────────── */
-  .conditions {
-    padding: 80px 24px;
-    background: linear-gradient(180deg, transparent, rgba(124,58,237,0.04) 50%, transparent);
-  }
+        @media (min-width: 1024px) {
+          .cure-panel {
+            flex-direction: row;
+          }
+        }
 
-  .conditions-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    justify-content: center;
-    max-width: 700px;
-    margin: 0 auto;
-  }
+        /* SIDEBAR */
+        .cure-sidebar {
+          display: flex;
+          flex-direction: column;
+          flex-shrink: 0;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
 
-  .condition-pill {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 24px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: rgba(255,255,255,0.75);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .condition-pill:hover {
-    background: rgba(124,58,237,0.12);
-    border-color: rgba(124,58,237,0.4);
-    color: #fff;
-    transform: scale(1.04);
-  }
-  .condition-pill .ci { font-size: 1.2rem; }
+        @media (min-width: 1024px) {
+          .cure-sidebar {
+            width: 260px;
+            border-bottom: none;
+            border-right: 1px solid rgba(255,255,255,0.06);
+            height: 100%;
+          }
+        }
 
-  /* ─── HOW IT WORKS ──────────────────────── */
-  .how {
-    padding: 100px 24px;
-  }
+        /* MAIN */
+        .cure-main {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-width: 0;
+          height: 100%;
+        }
 
-  .how-steps {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 0;
-    max-width: 900px;
-    margin: 0 auto;
-    position: relative;
-  }
-  .how-steps::before {
-    content: '';
-    position: absolute;
-    top: 32px;
-    left: calc(16.6% + 24px);
-    right: calc(16.6% + 24px);
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.4), rgba(37,99,235,0.4), transparent);
-  }
+        /* Header */
+        .cure-header {
+          padding: 24px 28px 20px;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+        }
 
-  .how-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 0 24px;
-    gap: 16px;
-  }
-  .how-step-num {
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 1.1rem;
-    color: #a78bfa;
-    position: relative;
-    z-index: 1;
-  }
-  .how-step-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1rem;
-    color: #fff;
-  }
-  .how-step-desc {
-    font-size: 0.78rem;
-    color: var(--muted);
-    line-height: 1.65;
-  }
+        .cure-logo {
+          width: 44px; height: 44px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, #7c3aed, #2563eb);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 22px;
+          box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+          flex-shrink: 0;
+        }
 
-  /* ─── STATS ─────────────────────────────── */
-  .stats {
-    padding: 80px 24px;
-    display: flex;
-    justify-content: center;
-  }
-  .stats-inner {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    max-width: 800px;
-    width: 100%;
-  }
-  .stat {
-    flex: 1;
-    min-width: 160px;
-    padding: 40px 32px;
-    background: var(--surface);
-    text-align: center;
-  }
-  .stat-num {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2.6rem;
-    color: #fff;
-    line-height: 1;
-    background: linear-gradient(135deg, #a78bfa, #60a5fa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .stat-label {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-top: 8px;
-    font-weight: 500;
-  }
+        .cure-header-text h1 {
+          font-family: 'DM Serif Display', serif;
+          font-size: 1.4rem;
+          color: #fff;
+          letter-spacing: -0.01em;
+          line-height: 1;
+        }
+        .cure-header-text p {
+          font-size: 0.7rem;
+          color: rgba(255,255,255,0.4);
+          font-weight: 400;
+          margin-top: 3px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
 
-  /* ─── CTA ───────────────────────────────── */
-  .cta-section {
-    padding: 100px 24px 120px;
-    text-align: center;
-    position: relative;
-  }
-  .cta-section::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px; height: 400px;
-    background: radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .cta-card {
-    max-width: 620px;
-    margin: 0 auto;
-    padding: 60px 48px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 28px;
-    position: relative;
-    overflow: hidden;
-  }
-  .cta-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(124,58,237,0.06), rgba(37,99,235,0.06));
-  }
-  .cta-card h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    color: #fff;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin-bottom: 16px;
-    position: relative;
-  }
-  .cta-card p {
-    font-size: 0.9rem;
-    color: var(--muted);
-    margin-bottom: 36px;
-    position: relative;
-  }
-  .cta-card .btn-primary { position: relative; font-size: 1rem; padding: 16px 40px; }
+        .cure-status {
+          margin-left: auto;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.7rem;
+          color: rgba(255,255,255,0.35);
+          font-weight: 500;
+        }
+        .cure-status-dot {
+          width: 7px; height: 7px;
+          border-radius: 50%;
+          background: #22c55e;
+          box-shadow: 0 0 8px #22c55e;
+          animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+          0%,100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
 
-  /* ─── FOOTER ────────────────────────────── */
-  footer {
-    padding: 40px 48px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-    position: relative;
-    z-index: 1;
-  }
-  .footer-logo {
-    display: flex; align-items: center; gap: 10px;
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.1rem;
-    color: rgba(255,255,255,0.6);
-  }
-  .footer-note {
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.2);
-    letter-spacing: 0.02em;
-  }
-  .footer-links {
-    display: flex; gap: 24px;
-  }
-  .footer-links a {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .footer-links a:hover { color: #fff; }
+        /* Condition selector */
+        .cure-condition-wrap {
+          padding: 14px 20px;
+          flex-shrink: 0;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          position: relative;
+        }
 
-  /* ─── ANIMATIONS ────────────────────────── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+        .cure-condition-label {
+          font-size: 0.65rem;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.3);
+          margin-bottom: 8px;
+        }
 
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+        .cure-condition-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 14px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          color: #fff;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+        .cure-condition-btn:hover {
+          background: rgba(255,255,255,0.09);
+          border-color: rgba(255,255,255,0.2);
+        }
+        .cure-condition-btn span:last-child {
+          margin-left: auto;
+          font-size: 0.7rem;
+          color: rgba(255,255,255,0.4);
+          transition: transform 0.2s;
+        }
+        .cure-condition-btn.open span:last-child {
+          transform: rotate(180deg);
+        }
 
-  /* ─── MOBILE ────────────────────────────── */
-  @media (max-width: 768px) {
-    nav { padding: 16px 20px; }
-    .nav-links { display: none; }
-    .how-steps::before { display: none; }
-    .how-steps { gap: 32px; }
-    .cta-card { padding: 40px 24px; }
-    footer { flex-direction: column; text-align: center; padding: 32px 20px; }
-    .footer-links { justify-content: center; }
-  }
-</style>
-</head>
-<body>
+        .cure-condition-dropdown {
+          position: absolute;
+          left: 20px; right: 20px;
+          top: calc(100% - 4px);
+          background: #13121f;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          overflow: hidden;
+          z-index: 10;
+          box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+          animation: slideDown 0.18s ease;
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
 
-<div class="blobs">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
-</div>
+        .cure-condition-option {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 14px;
+          cursor: pointer;
+          color: rgba(255,255,255,0.7);
+          font-size: 0.85rem;
+          transition: background 0.15s;
+        }
+        .cure-condition-option:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .cure-condition-option.active { color: #a78bfa; background: rgba(124,58,237,0.12); }
 
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="#">
-    <div class="nav-logo-icon">🩺</div>
-    CureMe AI
-  </a>
-  <ul class="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#conditions">Conditions</a></li>
-    <li><a href="#how">How it works</a></li>
-    <li><a href="./chat" class="nav-cta">Open App ↗</a></li>
-  </ul>
-</nav>
+        /* Chat area */
+        .cure-chat {
+          flex: 1;
+          padding: 20px 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          scroll-behavior: smooth;
+  overflow-y: scroll;
+        }
+        .cure-chat::-webkit-scrollbar { width: 4px; }
+        .cure-chat::-webkit-scrollbar-track { background: transparent; }
+        .cure-chat::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-badge">
-    <span class="hero-badge-dot"></span>
-    AI Health Companion · Powered by Cohere
-  </div>
-  <h1 class="hero-title">
-    Your health,<br/><em>understood.</em>
-  </h1>
-  <p class="hero-sub">
-    CureMe AI gives you warm, knowledgeable guidance tailored to your condition — whether it's diabetes, PCOS, hypertension, or more.
-  </p>
-  <div class="hero-actions">
-    <a href="./chat" class="btn-primary">Start Chatting &rarr;</a>
-    <a href="#features" class="btn-ghost">Learn more</a>
-  </div>
+        .cure-empty {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          color: rgba(255,255,255,0.2);
+          text-align: center;
+          padding: 40px 20px;
+        }
+        .cure-empty-icon {
+          font-size: 2.5rem;
+          opacity: 0.4;
+        }
+        .cure-empty h3 {
+          font-family: 'DM Serif Display', serif;
+          font-size: 1.1rem;
+          color: rgba(255,255,255,0.3);
+        }
+        .cure-empty p {
+          font-size: 0.75rem;
+          line-height: 1.6;
+          max-width: 220px;
+        }
 
-  <!-- Chat mockup -->
-  <div class="hero-visual">
-    <div class="hero-visual-bar">
-      <div class="hv-dot"></div>
-      <div class="hv-dot"></div>
-      <div class="hv-dot"></div>
-      <span class="hv-label">CureMe AI — Health Chat</span>
-    </div>
-    <div class="hero-visual-chat">
-      <div class="hv-msg user">
-        <div class="hv-avatar user">👤</div>
-        <div class="hv-bubble user">What foods should I avoid with diabetes?</div>
+        /* Suggestion chips */
+        .cure-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          justify-content: center;
+          margin-top: 8px;
+        }
+        .cure-chip {
+          padding: 6px 12px;
+          background: rgba(124,58,237,0.15);
+          border: 1px solid rgba(124,58,237,0.3);
+          border-radius: 20px;
+          color: #a78bfa;
+          font-size: 0.72rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          font-family: 'Sora', sans-serif;
+        }
+        .cure-chip:hover {
+          background: rgba(124,58,237,0.3);
+          transform: translateY(-1px);
+        }
+
+        /* Bubbles */
+        .cure-bubble-row {
+          display: flex;
+          gap: 8px;
+          align-items: flex-end;
+        }
+        .cure-bubble-row.user { justify-content: flex-end; }
+        .cure-bubble-row.assistant { justify-content: flex-start; }
+
+        .cure-avatar {
+          width: 28px; height: 28px;
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 14px;
+          flex-shrink: 0;
+        }
+        .cure-avatar.ai {
+          background: linear-gradient(135deg, #7c3aed, #2563eb);
+          box-shadow: 0 2px 12px rgba(124,58,237,0.4);
+        }
+
+        .cure-bubble {
+          max-width: 75%;
+          padding: 12px 16px;
+          border-radius: 18px;
+          font-size: 0.82rem;
+          line-height: 1.65;
+          word-break: break-word;
+          animation: bubbleIn 0.25s ease;
+        }
+        @keyframes bubbleIn {
+          from { opacity: 0; transform: translateY(8px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .cure-bubble.user {
+          background: linear-gradient(135deg, #7c3aed, #4f46e5);
+          color: #fff;
+          border-bottom-right-radius: 5px;
+          box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+        }
+
+        .cure-bubble.assistant {
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.88);
+          border-bottom-left-radius: 5px;
+        }
+
+        /* Markdown formatting */
+        .cure-bubble strong {
+          color: #c4b5fd;
+          font-weight: 600;
+        }
+        .cure-bubble.user strong {
+          color: rgba(255,255,255,0.95);
+        }
+        .cure-bubble ul {
+          margin: 6px 0 6px 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .cure-bubble li {
+          list-style: disc;
+          line-height: 1.6;
+        }
+
+        /* Typing indicator */
+        .cure-typing {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 14px 18px;
+          background: rgba(255,255,255,0.07);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 18px;
+          border-bottom-left-radius: 5px;
+          width: fit-content;
+        }
+        .cure-typing span {
+          width: 6px; height: 6px;
+          background: rgba(255,255,255,0.5);
+          border-radius: 50%;
+          animation: bounce 1.2s ease-in-out infinite;
+        }
+        .cure-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .cure-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+          0%,60%,100% { transform: translateY(0); }
+          30% { transform: translateY(-5px); }
+        }
+
+        /* Input */
+        .cure-input-wrap {
+          padding: 14px 16px 18px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+        }
+
+        .cure-input-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 16px;
+          padding: 6px 6px 6px 16px;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .cure-input-row:focus-within {
+          border-color: rgba(124,58,237,0.5);
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+        }
+
+        .cure-input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #fff;
+          font-family: 'Sora', sans-serif;
+          font-size: 0.85rem;
+          padding: 6px 0;
+        }
+        .cure-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .cure-send-btn {
+          width: 40px; height: 40px;
+          border-radius: 11px;
+          border: none;
+          background: linear-gradient(135deg, #7c3aed, #4f46e5);
+          color: #fff;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 16px;
+          transition: all 0.2s;
+          flex-shrink: 0;
+          box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+        }
+        .cure-send-btn:hover:not(:disabled) {
+          transform: scale(1.06);
+          box-shadow: 0 6px 20px rgba(124,58,237,0.55);
+        }
+        .cure-send-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .cure-footer-note {
+          text-align: center;
+          font-size: 0.62rem;
+          color: rgba(255,255,255,0.2);
+          margin-top: 8px;
+          letter-spacing: 0.03em;
+        }
+           @media (max-width: 1023px) {
+          .cure-panel-wrapper {
+            width: 100%;
+            max-width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            padding: 2px;
+          }
+
+          .cure-panel {
+            border-radius: 0;
+          }
+
+          .cure-root::before,
+          .cure-root::after {
+            display: none;
+          }
+        }
+      `}</style>
+
+      <div className="cure-root">
+
+        {/* Outer wrapper handles the animated border */}
+        <div className="cure-panel-wrapper">
+
+          {/* Inner panel holds all the content */}
+          <div className="cure-panel">
+
+            {/* ── SIDEBAR ── */}
+            <div className="cure-sidebar">
+
+              <div className="cure-header">
+                <div className="cure-logo">🩺</div>
+                <div className="cure-header-text">
+                  <h1>CureMe AI</h1>
+                  <p>AI Health Companion</p>
+                </div>
+                <div className="cure-status">
+                  <div className="cure-status-dot" />
+                  Online
+                </div>
+              </div>
+
+              <div className="cure-condition-wrap">
+                <div className="cure-condition-label">Your Condition</div>
+                <button
+                  className={`cure-condition-btn ${conditionOpen ? "open" : ""}`}
+                  onClick={() => setConditionOpen((v) => !v)}
+                >
+                  <span>{selected.icon}</span>
+                  <span>{selected.label}</span>
+                  <span>▾</span>
+                </button>
+
+                {conditionOpen && (
+                  <div className="cure-condition-dropdown">
+                    {CONDITIONS.map((c) => (
+                      <div
+                        key={c.value}
+                        className={`cure-condition-option ${disease === c.value ? "active" : ""}`}
+                        onClick={() => {
+                          setDisease(c.value);
+                          setConditionOpen(false);
+                        }}
+                      >
+                        <span>{c.icon}</span>
+                        <span>{c.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+            {/* ── END SIDEBAR ── */}
+
+            {/* ── MAIN ── */}
+            <div className="cure-main">
+
+              <div className="cure-chat">
+                {messages.length === 0 && !loading ? (
+                  <div className="cure-empty">
+                    <div className="cure-empty-icon">✦</div>
+                    <h3>How can I help you?</h3>
+                    <p>Ask anything about your health, symptoms, or diet.</p>
+                    <div className="cure-chips">
+                      {["What should I eat?", "Any side effects?", "Daily routine tips"].map((q) => (
+                        <button
+                          key={q}
+                          className="cure-chip"
+                          onClick={() => setInput(q)}
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((msg, idx) => (
+                      <div key={idx} className={`cure-bubble-row ${msg.role}`}>
+                        {msg.role === "assistant" && (
+                          <div className="cure-avatar ai">✦</div>
+                        )}
+                        <div className={`cure-bubble ${msg.role}`}>
+                          <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                        </div>
+                      </div>
+                    ))}
+
+                    {loading && (
+                      <div className="cure-bubble-row assistant">
+                        <div className="cure-avatar ai">✦</div>
+                        <div className="cure-typing">
+                          <span /><span /><span />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="cure-input-wrap">
+                <div className="cure-input-row">
+                  <input
+                    className="cure-input"
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                    placeholder="Ask your health question…"
+                  />
+                  <button
+                    className="cure-send-btn"
+                    onClick={handleSend}
+                    disabled={loading || !input.trim()}
+                  >
+                    ↑
+                  </button>
+                </div>
+                <div className="cure-footer-note">
+                  For informational purposes only · Not a substitute for professional advice
+                </div>
+              </div>
+
+            </div>
+            {/* ── END MAIN ── */}
+
+          </div>
+        </div>
+
       </div>
-      <div class="hv-msg">
-        <div class="hv-avatar ai">✦</div>
-        <div class="hv-bubble ai"><strong>Foods to limit with Diabetes:</strong><br/>Avoid refined carbs like white bread and sugary drinks. Focus on whole grains, lean proteins, and fibre-rich vegetables. Monitor your glycaemic index. <em>Always consult your doctor for personalized advice.</em></div>
-      </div>
-      <div class="hv-msg user">
-        <div class="hv-avatar user">👤</div>
-        <div class="hv-bubble user">Any morning routine tips?</div>
-      </div>
-      <div class="hv-msg">
-        <div class="hv-avatar ai">✦</div>
-        <div class="hv-bubble ai">Start with a 10-min walk, check blood sugar, eat a balanced breakfast with protein. Hydrate well. Consistency matters most. <em>Always consult your doctor for personalized advice.</em></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURES -->
-<section class="features" id="features">
-  <p class="section-label reveal">What we offer</p>
-  <h2 class="section-title reveal">Built for <em style="font-style:italic;color:#a78bfa;">real</em> health questions</h2>
-  <div class="features-grid">
-    <div class="feature-card reveal">
-      <div class="feature-icon violet">🧠</div>
-      <h3 class="feature-title">Condition-Aware AI</h3>
-      <p class="feature-desc">Tell us your condition once and every response is tailored — diet, routine, and medication context all adjusted automatically.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon cyan">💬</div>
-      <h3 class="feature-title">Natural Conversation</h3>
-      <p class="feature-desc">Ask anything the way you'd ask a knowledgeable friend. No forms, no menus — just a warm, clear dialogue.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon rose">🌿</div>
-      <h3 class="feature-title">Non-Alarming Tone</h3>
-      <p class="feature-desc">CureMe is designed to inform, not scare. Responses are calm, caring, and never use medical jargon without explanation.</p>
-    </div>
-    <div class="feature-card reveal">
-      <div class="feature-icon green">⚡</div>
-      <h3 class="feature-title">Instant Answers</h3>
-      <p class="feature-desc">No waiting for appointments. Get thoughtful guidance on symptoms, diet, and daily habits in seconds, any time of day.</p>
-    </div>
-  </div>
-</section>
-
-<!-- CONDITIONS -->
-<section class="conditions" id="conditions">
-  <p class="section-label reveal">Supported conditions</p>
-  <h2 class="section-title reveal">Tailored for your diagnosis</h2>
-  <div class="conditions-grid">
-    <div class="condition-pill reveal"><span class="ci">🩸</span> Diabetes</div>
-    <div class="condition-pill reveal"><span class="ci">🌸</span> PCOS</div>
-    <div class="condition-pill reveal"><span class="ci">💓</span> Hypertension</div>
-    <div class="condition-pill reveal"><span class="ci">⚖️</span> Obesity</div>
-    <div class="condition-pill reveal"><span class="ci">✦</span> General Health</div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how" id="how">
-  <p class="section-label reveal">How it works</p>
-  <h2 class="section-title reveal">Three steps to clarity</h2>
-  <div class="how-steps">
-    <div class="how-step reveal">
-      <div class="how-step-num">01</div>
-      <h3 class="how-step-title">Pick your condition</h3>
-      <p class="how-step-desc">Select from our supported conditions or leave it blank for general health guidance.</p>
-    </div>
-    <div class="how-step reveal">
-      <div class="how-step-num">02</div>
-      <h3 class="how-step-title">Ask your question</h3>
-      <p class="how-step-desc">Type naturally — symptoms, diet, medication, or lifestyle. No jargon needed.</p>
-    </div>
-    <div class="how-step reveal">
-      <div class="how-step-num">03</div>
-      <h3 class="how-step-title">Get clear guidance</h3>
-      <p class="how-step-desc">Receive a focused, warm response tailored to you — with a gentle reminder to consult your doctor.</p>
-    </div>
-  </div>
-</section>
-
-<!-- STATS -->
-<div class="stats">
-  <div class="stats-inner">
-    <div class="stat reveal">
-      <div class="stat-num">4+</div>
-      <div class="stat-label">Conditions supported</div>
-    </div>
-    <div class="stat reveal">
-      <div class="stat-num">120</div>
-      <div class="stat-label">Word limit · Focused answers</div>
-    </div>
-    <div class="stat reveal">
-      <div class="stat-num">0</div>
-      <div class="stat-label">Unnecessary alarm</div>
-    </div>
-    <div class="stat reveal">
-      <div class="stat-num">∞</div>
-      <div class="stat-label">Questions you can ask</div>
-    </div>
-  </div>
-</div>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="cta-card reveal">
-    <h2>Start your health<br/>conversation today.</h2>
-    <p>Free to use. No sign-up required. Just ask.</p>
-    <a href="./chat" class="btn-primary">Open CureMe AI &rarr;</a>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">🩺 CureMe AI</div>
-  <p class="footer-note">For informational purposes only · Not a substitute for professional medical advice</p>
-  <div class="footer-links">
-    <a href="#features">Features</a>
-    <a href="#conditions">Conditions</a>
-    <a href="#how">How it works</a>
-  </div>
-</footer>
-
-<script>
-  // Scroll reveal
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  reveals.forEach(el => observer.observe(el));
-</script>
-</body>
-</html>
+    </>
+  );
+}

@@ -2,18 +2,40 @@
 
 import { useState, useRef, useEffect } from "react";
 import { askAI } from "@/lib/gemini";
+import { initializeApp, getApps } from "firebase/app";
+import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
+  authDomain: "cureme-ed6d7.firebaseapp.com",
+  projectId: "cureme-ed6d7",
+  storageBucket: "cureme-ed6d7.firebasestorage.app",
+  messagingSenderId: "495173236710",
+  appId: "1:495173236710:web:6bea8835762bdf70618827",
+  measurementId: "G-DRFWEELWCK"
+};
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const auth = getAuth(app);
 type Message = {
   role: "user" | "assistant";
   content: string;
 };
 
-const CONDITIONS = [
-  { value: "", label: "No Condition Selected", icon: "◎" },
-  { value: "Diabetes", label: "Diabetes", icon: "🩸" },
-  { value: "PCOS", label: "PCOS", icon: "🌸" },
-  { value: "Hypertension", label: "Hypertension", icon: "💓" },
-  { value: "Obesity", label: "Obesity", icon: "⚖️" },
+import { Circle, Droplets, Flower2, Heart, Scale } from "lucide-react";
+
+type Condition = {
+  value: string;
+  label: string;
+  icon: React.ReactNode;
+};
+
+const CONDITIONS: Condition[] = [
+  { value: "", label: "No Condition Selected", icon: <Circle size={15} strokeWidth={1.5} color="rgba(255,255,255,0.4)" /> },
+  { value: "Diabetes", label: "Diabetes", icon: <Droplets size={15} strokeWidth={1.5} color="#f87171" /> },
+  { value: "PCOS", label: "PCOS", icon: <Flower2 size={15} strokeWidth={1.5} color="#e879a0" /> },
+  { value: "Hypertension", label: "Hypertension", icon: <Heart size={15} strokeWidth={1.5} color="#fb923c" /> },
+  { value: "Obesity", label: "Obesity", icon: <Scale size={15} strokeWidth={1.5} color="#a78bfa" /> },
 ];
 
 function formatMessage(text: string): string {
@@ -28,6 +50,38 @@ function formatMessage(text: string): string {
 }
 
 export default function ChatBotPremium() {
+  const [user, setUser] = useState<User | null>(null);
+const [authReady, setAuthReady] = useState(false);
+const [dropdownOpen, setDropdownOpen] = useState(false);
+
+useEffect(() => {
+  const unsub = onAuthStateChanged(auth, (u) => {
+    setUser(u);
+    setAuthReady(true);
+  });
+  return () => unsub();
+}, []);
+
+useEffect(() => {
+  const handleClick = (e: MouseEvent) => {
+    if (!(e.target as HTMLElement).closest(".user-menu")) setDropdownOpen(false);
+  };
+  document.addEventListener("click", handleClick);
+  return () => document.removeEventListener("click", handleClick);
+}, []);
+
+const getInitials = (u: User) => {
+  if (u.displayName) {
+    const parts = u.displayName.trim().split(" ");
+    return parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0][0];
+  }
+  return u.email?.[0]?.toUpperCase() ?? "?";
+};
+
+const handleSignOut = async () => {
+  await signOut(auth);
+  window.location.href = "/";
+};
   const [disease, setDisease] = useState<string>("");
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -596,9 +650,194 @@ Respond now:`;
             display: none;
           }
         }
-      `}</style>
+          /* CHAT PAGE NAV */
+.chat-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(6,6,14,0.7);
+}
 
-      <div className="cure-root">
+.chat-nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem; color: #fff; text-decoration: none;
+}
+.chat-nav-logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+}
+
+.chat-nav-links {
+  display: flex; align-items: center; gap: 28px; list-style: none;
+}
+.chat-nav-links a {
+  color: rgba(255,255,255,0.4);
+  text-decoration: none;
+  font-size: 0.8rem; font-weight: 500; letter-spacing: 0.04em;
+  transition: color 0.2s;
+}
+.chat-nav-links a:hover { color: #fff; }
+
+/* reuse user-menu styles from landing page */
+.chat-nav .user-menu { position: relative; }
+.chat-nav .user-avatar-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px 6px 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  cursor: pointer; transition: all 0.2s;
+  color: rgba(255,255,255,0.8);
+  font-size: 0.8rem; font-weight: 500;
+  font-family: 'Sora', sans-serif;
+}
+.chat-nav .user-avatar-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(124,58,237,0.4);
+}
+.chat-nav .user-avatar-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.chat-nav .user-photo {
+  width: 28px; height: 28px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+}
+.chat-nav .user-chevron {
+  width: 14px; height: 14px; opacity: 0.5; transition: transform 0.2s;
+}
+.chat-nav .user-chevron.open { transform: rotate(180deg); }
+
+.chat-nav .user-dropdown {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  min-width: 220px;
+  background: #13121f;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 8px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  animation: dropIn 0.18s ease both; z-index: 300;
+}
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.chat-nav .dropdown-header {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 6px;
+}
+.chat-nav .dropdown-name {
+  font-size: 0.82rem; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-nav .dropdown-email {
+  font-size: 0.7rem; color: rgba(255,255,255,0.4);
+  margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-nav .dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 14px;
+  background: none; border: none;
+  color: rgba(255,255,255,0.65);
+  font-family: 'Sora', sans-serif; font-size: 0.8rem;
+  border-radius: 10px; cursor: pointer;
+  transition: all 0.15s; text-decoration: none;
+}
+.chat-nav .dropdown-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.chat-nav .dropdown-item.danger:hover { background: rgba(232,121,160,0.1); color: #f9a8d4; }
+
+.chat-nav-login-ghost {
+  padding: 8px 18px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.8rem; font-weight: 500;
+  text-decoration: none; transition: all 0.2s;
+}
+.chat-nav-login-ghost:hover {
+  border-color: rgba(255,255,255,0.3); color: #fff;
+  background: rgba(255,255,255,0.04);
+}
+.chat-nav-placeholder {
+  width: 120px; height: 34px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 100px;
+  animation: shimmer 1.5s ease infinite;
+}
+@keyframes shimmer { 0%,100%{opacity:0.4;} 50%{opacity:0.8;} }
+
+/* push cure-root down so nav doesn't overlap */
+.cure-root { padding-top: 65px; }
+
+@media (max-width: 768px) {
+  .chat-nav { padding: 12px 16px; }
+  .chat-nav-links { display: none; }
+  .cure-root { padding-top: 57px; }
+}
+      `}</style>
+{/* ── CHAT NAV ── */}
+<nav className="chat-nav">
+  <a className="chat-nav-logo" href="/">
+    <div className="chat-nav-logo-icon">🩺</div>
+    CureMe AI
+  </a>
+
+  <ul className="chat-nav-links">
+    <li><a href="/#features">Features</a></li>
+    <li><a href="/#conditions">Conditions</a></li>
+    <li><a href="/#how">How it works</a></li>
+  </ul>
+
+  {!authReady ? (
+    <div className="chat-nav-placeholder" />
+  ) : user ? (
+    <div className="user-menu">
+      <button className="user-avatar-btn" onClick={() => setDropdownOpen((o) => !o)}>
+        {user.photoURL ? (
+          <img src={user.photoURL} alt="avatar" className="user-photo" />
+        ) : (
+          <div className="user-avatar-circle">{getInitials(user)}</div>
+        )}
+        <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8rem" }}>
+          {user.displayName?.split(" ")[0] || user.email?.split("@")[0]}
+        </span>
+        <svg className={`user-chevron ${dropdownOpen ? "open" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {dropdownOpen && (
+        <div className="user-dropdown">
+          <div className="dropdown-header">
+            <div className="dropdown-name">{user.displayName || "User"}</div>
+            <div className="dropdown-email">{user.email}</div>
+          </div>
+          <button className="dropdown-item danger" onClick={handleSignOut}>
+            <span>↩</span> Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  ) : (
+    <a href="/login" className="chat-nav-login-ghost">Login</a>
+  )}
+</nav>
+
+<div className="cure-root">
 
         {/* Outer wrapper handles the animated border */}
         <div className="cure-panel-wrapper">

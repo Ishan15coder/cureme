@@ -1,14 +1,19 @@
 # 🩺 CureMe AI
 
-CureMe AI is a health companion web app that provides warm, knowledgeable guidance tailored to a user's medical condition. Users can ask questions about symptoms, diet, medication, and daily habits — and receive clear, caring, non-alarming responses powered by Cohere's AI.
+CureMe AI is a personalised health companion web app that provides warm, knowledgeable guidance tailored to a user's medical profile and condition. Users sign up, complete a health survey, and can then ask questions about symptoms, diet, medication, and daily habits — receiving clear, caring, non-alarming responses powered by Google Gemini AI.
 
 ---
 
 ## ✨ Features
 
 - **Condition-Aware Chat** — Responses tailored to Diabetes, PCOS, Hypertension, Obesity, or General Health
+- **Personalised Health Profile** — Survey collects age, gender, height, weight, health issues, medications, and allergies — all used to personalise every AI response
+- **BMI-Aware Responses** — BMI is calculated automatically and factored into dietary and lifestyle advice
+- **Medication & Allergy Safety** — AI never suggests foods or remedies that conflict with the user's allergies or current medications
 - **Natural Conversation** — Ask health questions the way you'd ask a knowledgeable friend
 - **Firebase Authentication** — Email/password and Google sign-in with persistent sessions
+- **Chat History** — Conversations are saved per user in Firestore and restored on every sign-in
+- **Edit Profile Anytime** — Users can update their health profile from the nav dropdown
 - **Responsive Design** — Works seamlessly on desktop and mobile
 - **Non-Alarming Tone** — Calm, caring responses that inform without causing panic
 - **Instant Answers** — No appointments, no waiting — guidance in seconds
@@ -21,8 +26,9 @@ CureMe AI is a health companion web app that provides warm, knowledgeable guidan
 |---|---|
 | Framework | [Next.js](https://nextjs.org/) (App Router) |
 | Language | TypeScript |
-| AI | [Cohere](https://cohere.com/) |
+| AI | [Google Gemini](https://ai.google.dev/) |
 | Auth | [Firebase Authentication](https://firebase.google.com/) |
+| Database | [Cloud Firestore](https://firebase.google.com/products/firestore) |
 | Icons | [Lucide React](https://lucide.dev/) |
 | Deployment | [Netlify](https://www.netlify.com/) |
 
@@ -34,8 +40,8 @@ CureMe AI is a health companion web app that provides warm, knowledgeable guidan
 
 - Node.js 18+
 - npm or yarn
-- A Cohere API key
-- A Firebase project
+- A Google Gemini API key
+- A Firebase project with Authentication and Firestore enabled
 
 ### Installation
 
@@ -53,8 +59,8 @@ npm install
 Create a `.env.local` file in the root of the project and add the following:
 
 ```env
-# Cohere
-COHERE_API_KEY=your_cohere_api_key
+# Gemini
+GEMINI_API_KEY=your_gemini_api_key
 
 # Firebase
 NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
@@ -86,15 +92,71 @@ npm run build
 ```
 cureme-ai/
 ├── app/
-│   ├── page.tsx          # Landing page
+│   ├── page.tsx            # Landing page (auth-aware nav)
 │   ├── chat/
-│   │   └── page.tsx      # Chat interface
-│   └── login/
-│       └── page.tsx      # Authentication page
+│   │   └── page.tsx        # Chat interface with profile-aware AI
+│   ├── login/
+│   │   └── page.tsx        # Authentication (email + Google)
+│   └── survey/
+│       └── page.tsx        # 3-step health profile survey
 ├── lib/
-│   └── cohere.ts         # Cohere API integration
-├── public/               # Static assets
+│   └── gemini.ts           # Gemini API integration
+├── public/                 # Static assets
 └── README.md
+```
+
+---
+
+## 🗄 Firestore Data Structure
+
+```
+firestore/
+├── profiles/
+│   └── {uid}/
+│       ├── age
+│       ├── gender
+│       ├── heightCm
+│       ├── weightKg
+│       ├── healthIssues
+│       ├── medications
+│       ├── allergies
+│       └── updatedAt
+└── chats/
+    └── {uid}/
+        └── messages/
+            └── {messageId}/
+                ├── role        # "user" | "assistant"
+                ├── content
+                └── timestamp
+```
+
+---
+
+## 🔐 Firestore Security Rules
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /profiles/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /chats/{uid}/messages/{messageId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
+```
+
+---
+
+## 🔄 User Flow
+
+```
+Sign Up → Health Survey (3 steps) → Chat
+Sign In → Chat (survey skipped if already completed)
+Chat Nav → Edit Profile → Update survey → Back to Chat
+Chat Nav → Clear Chat → Wipes conversation history
 ```
 
 ---
@@ -109,7 +171,7 @@ Make sure all environment variables are configured in your Netlify project setti
 
 ## ⚠️ Disclaimer
 
-CureMe AI is for **informational purposes only** and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider for personalized medical guidance.
+CureMe AI is for **informational purposes only** and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider for personalised medical guidance.
 
 ---
 

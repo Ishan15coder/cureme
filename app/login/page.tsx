@@ -10,6 +10,7 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
 } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
@@ -23,6 +24,7 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
+const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 export default function LoginPage() {
@@ -53,11 +55,24 @@ export default function LoginPage() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Redirect helper (called ONLY after a successful login action) ──────────
-  const redirectAfterAuth = (isNew = false) => {
-    sessionStorage.setItem("cureme_just_authed", "true");
-    sessionStorage.setItem("cureme_is_new", String(isNew));
-    window.location.href = "./";
-  };
+const redirectAfterAuth = async (isNew = false) => {
+  sessionStorage.setItem("cureme_just_authed", "true");
+  sessionStorage.setItem("cureme_is_new", String(isNew));
+  
+  if (isNew) {
+    // Check if they already filled the survey before
+    const snap = await getDoc(doc(db, "profiles", auth.currentUser!.uid));
+    if (snap.exists()) {
+      // Profile already exists — skip survey
+      window.location.href = "/";
+    } else {
+      // Brand new user — show survey
+      window.location.href = "/survey";
+    }
+  } else {
+    window.location.href = "/";
+  }
+};
 
   // AFTER
 // AFTER

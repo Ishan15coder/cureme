@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
  import { Droplets, Flower2, Heart, Scale, Sparkles } from "lucide-react";
 
 const firebaseConfig = {
@@ -20,7 +20,7 @@ const auth = getAuth(app);
 export default function LandingPage() {
   const [user, setUser] = useState<any>(null);
 const [authReady, setAuthReady] = useState(false);
-  const [toast, setToast] = useState(null);
+const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -75,13 +75,13 @@ const [authReady, setAuthReady] = useState(false);
     setTimeout(() => setToast(null), 3000);
   };
 
-  const getInitials = (u) => {
-    if (u.displayName) {
-      const parts = u.displayName.trim().split(" ");
-      return parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0][0];
-    }
-    return u.email?.[0]?.toUpperCase() ?? "?";
-  };
+  const getInitials = (u: User) => {
+  if (u.displayName) {
+    const parts = u.displayName.trim().split(" ");
+    return parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0][0];
+  }
+  return u.email?.[0]?.toUpperCase() ?? "?";
+};
 
   // ── Shared auth UI (used in both desktop list-item and mobile div) ──────────
  const UserMenu = ({ mobile = false }: { mobile?: boolean }) => {

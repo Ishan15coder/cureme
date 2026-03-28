@@ -88,10 +88,11 @@ const friendlyError = (code: string) => {
         await createUserWithEmailAndPassword(auth, email, password);
         redirectAfterAuth(true);
       }
-    } catch (err) {
-      setError(friendlyError(err.code));
-      setLoading(false);
-    }
+    } catch (err: unknown) {
+  const code = (err as { code?: string })?.code ?? "";
+  setError(friendlyError(code));
+  setLoading(false);
+}
   };
 
   // ── Google ─────────────────────────────────────────────────────────────────
@@ -103,10 +104,12 @@ const friendlyError = (code: string) => {
       const isNew =
         result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
       redirectAfterAuth(isNew);
-    } catch (err) {
-      setError(friendlyError(err.code));
-      setLoading(false);
-    }
+    } 
+catch (err: unknown) {
+  const code = (err as { code?: string })?.code ?? "";
+  setError(friendlyError(code));
+  setLoading(false);
+}
   };
 
   return (

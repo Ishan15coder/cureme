@@ -60,13 +60,13 @@ const [authReady, setAuthReady] = useState(false);
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (!e.target.closest(".user-menu")) setDropdownOpen(false);
-    };
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, []);
+ useEffect(() => {
+  const handleClick = (e: MouseEvent) => {
+    if (!(e.target as HTMLElement).closest(".user-menu")) setDropdownOpen(false);
+  };
+  document.addEventListener("click", handleClick);
+  return () => document.removeEventListener("click", handleClick);
+}, []);
 
   const handleSignOut = async () => {
     await signOut(auth);

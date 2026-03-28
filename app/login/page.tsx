@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { useState, useEffect } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import {
@@ -75,7 +76,7 @@ const friendlyError = (code: string) => {
 };
 
   // ── Email / password ───────────────────────────────────────────────────────
-  const handleEmailAuth = async (e) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);

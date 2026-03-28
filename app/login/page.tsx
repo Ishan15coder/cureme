@@ -58,7 +58,8 @@ export default function LoginPage() {
     window.location.href = "./";
   };
 
-  const friendlyError = (code) => {
+  // AFTER
+const friendlyError = (code: string) => {
     const map = {
       "auth/invalid-email": "Please enter a valid email address.",
       "auth/user-not-found": "No account found with that email.",

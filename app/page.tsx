@@ -350,6 +350,27 @@ export default function LandingPage() {
   /* TOAST */
   .toast { font-size: 0.75rem; padding: 11px 18px; max-width: 90vw; white-space: normal; text-align: center; bottom: 16px; }
 }
+  .btn-symptom {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #0f766e, #0891b2);
+  border-radius: 14px;
+  color: #fff;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 6px 24px rgba(8,145,178,0.4);
+  transition: all 0.25s;
+  cursor: pointer;
+  border: none;
+}
+.btn-symptom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(8,145,178,0.55);
+}
 
 @media (max-width: 480px) {
   .hero-title { font-size: clamp(1.9rem, 9vw, 2.4rem); }
@@ -417,10 +438,11 @@ export default function LandingPage() {
         <p className="hero-sub">
           Your personal AI health companion that knows your conditions, medications, and allergies — and gives advice that's actually tailored to you.
         </p>
-        <div className="hero-actions">
-          <a href="./chat" className="btn-primary">Start Chatting →</a>
-          <a href="#features" className="btn-ghost">Learn more</a>
-        </div>
+          <div className="hero-actions">
+    <a href="./chat" className="btn-primary">Start Chatting →</a>
+    <a href="/symptoms" className="btn-symptom">Check Symptoms 🔍</a>
+    <a href="#features" className="btn-ghost">Learn more</a>
+  </div>
         <div className="hero-visual">
           <div className="hero-visual-bar">
             <div className="hv-dot" /><div className="hv-dot" /><div className="hv-dot" />

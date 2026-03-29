@@ -40,8 +40,8 @@ function calcBMI(h: string, w: string): number | null {
 
 function bmiCategory(bmi: number): { label: string; color: string; bg: string } {
   if (bmi < 18.5) return { label: "Underweight", color: "#60a5fa", bg: "rgba(96,165,250,0.15)" };
-  if (bmi < 25)   return { label: "Healthy",     color: "#22c55e", bg: "rgba(34,197,94,0.15)" };
-  if (bmi < 30)   return { label: "Overweight",  color: "#fb923c", bg: "rgba(251,146,60,0.15)" };
+  if (bmi < 25)   return { label: "Healthy",     color: "#4ade80", bg: "rgba(74,222,128,0.15)" };
+  if (bmi < 30)   return { label: "Overweight",  color: "#facc15", bg: "rgba(250,204,21,0.15)" };
   return             { label: "Obese",        color: "#f87171", bg: "rgba(248,113,113,0.15)" };
 }
 
@@ -88,9 +88,9 @@ function BMIGauge({ bmi }: { bmi: number | null }) {
 
   const cat = bmi !== null ? bmiCategory(bmi) : null;
 
-  const R = 68;
-  const cx = 110;
-  const cy = 105;
+  const R = 80;
+  const cx = 140;
+  const cy = 120;
 
   const toRad = (d: number) => (d * Math.PI) / 180;
 
@@ -99,61 +99,54 @@ function BMIGauge({ bmi }: { bmi: number | null }) {
     const y1 = cy + r * Math.sin(toRad(startDeg));
     const x2 = cx + r * Math.cos(toRad(endDeg));
     const y2 = cy + r * Math.sin(toRad(endDeg));
-    const large = endDeg - startDeg > 180 ? 1 : 0;
+    const large = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
     return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
   };
 
   const bmiClamped = bmi !== null ? Math.max(10, Math.min(40, bmi)) : 10;
   const dotAngle = -180 + ((bmiClamped - 10) / 30) * 180;
-  const dotRad = toRad(dotAngle);
-  const dotX = cx + R * Math.cos(dotRad);
-  const dotY = cy + R * Math.sin(dotRad);
+  const dotX = cx + R * Math.cos(toRad(dotAngle));
+  const dotY = cy + R * Math.sin(toRad(dotAngle));
 
+  // Seamless segments — no gaps, exact BMI breakpoints
+  // BMI 10→18.5 = -180 to -129, 18.5→25 = -129 to -90, 25→30 = -90 to -60, 30→40 = -60 to 0
   const segments = [
-    { start: -180, end: -126, color: "#60a5fa" },
-    { start: -122, end: -68,  color: "#22c55e" },
-    { start: -64,  end: -10,  color: "#fb923c" },
-    { start:  -6,  end:   0,  color: "#f87171" },
-  ];
-
-  const labels = [
-    { text: "Under",  x: 28,  y: 112, color: "#60a5fa" },
-    { text: "Normal", x: 72,  y: 122, color: "#22c55e" },
-    { text: "Over",   x: 148, y: 122, color: "#fb923c" },
-    { text: "Obese",  x: 192, y: 112, color: "#f87171" },
+    { start: -180, end: -129, color: "#60a5fa" }, // Underweight
+    { start: -129, end:  -90, color: "#4ade80" }, // Normal
+    { start:  -90, end:  -60, color: "#facc15" }, // Overweight
+    { start:  -60, end:    0, color: "#f87171" }, // Obese
   ];
 
   return (
-    <svg viewBox="0 0 220 135" style={{ width: "100%", maxWidth: 260 }}>
+    <svg viewBox="0 0 280 155" style={{ width: "100%", maxWidth: 300 }}>
 
       {/* Background track */}
       <path
         d={arcPath(-180, 0, R)}
         fill="none"
-        stroke="rgba(255,255,255,0.05)"
-        strokeWidth="14"
+        stroke="rgba(255,255,255,0.06)"
+        strokeWidth="16"
       />
 
-      {/* Dim colour segments */}
+      {/* Dim colour segments — full track width */}
       {segments.map((seg, i) => (
         <path
           key={i}
           d={arcPath(seg.start, seg.end, R)}
           fill="none"
           stroke={seg.color}
-          strokeWidth="14"
-          strokeLinecap="round"
-          opacity="0.18"
+          strokeWidth="16"
+          opacity="0.3"
         />
       ))}
 
-      {/* Active arc */}
+      {/* Active arc — slightly thinner so segments show as border */}
       {bmi !== null && cat && (
         <path
           d={arcPath(-180, animated ? dotAngle : -180, R)}
           fill="none"
           stroke={cat.color}
-          strokeWidth="14"
+          strokeWidth="15"
           strokeLinecap="round"
           style={{
             filter: `drop-shadow(0 0 8px ${cat.color}99)`,
@@ -162,77 +155,46 @@ function BMIGauge({ bmi }: { bmi: number | null }) {
         />
       )}
 
-      {/* Dot indicator on arc — replaces the needle */}
+      {/* Dot indicator */}
       {bmi !== null && cat && (
         <>
-          {/* Outer glow ring */}
           <circle
             cx={animated ? dotX : cx - R}
             cy={animated ? dotY : cy}
-            r="10"
-            fill={`${cat.color}22`}
-            style={{ transition: "all 1.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+            r="11" fill={`${cat.color}22`}
+            style={{ transition: "all 1.4s cubic-bezier(0.34,1.56,0.64,1)" }}
           />
-          {/* White ring */}
           <circle
             cx={animated ? dotX : cx - R}
             cy={animated ? dotY : cy}
-            r="7"
-            fill="#0d0d1a"
-            stroke="#fff"
-            strokeWidth="2"
-            style={{ transition: "all 1.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+            r="7" fill="#0d0d1a" stroke="#fff" strokeWidth="2"
+            style={{ transition: "all 1.4s cubic-bezier(0.34,1.56,0.64,1)" }}
           />
-          {/* Colour fill */}
           <circle
             cx={animated ? dotX : cx - R}
             cy={animated ? dotY : cy}
-            r="4"
-            fill={cat.color}
+            r="3.5" fill={cat.color}
             style={{
-              transition: "all 1.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              transition: "all 1.4s cubic-bezier(0.34,1.56,0.64,1)",
               filter: `drop-shadow(0 0 4px ${cat.color})`,
             }}
           />
         </>
       )}
 
-      {/* BMI value — centred, no overlap */}
-      {bmi !== null ? (
-        <>
-          <text
-            x={cx} y={cy - 22}
-            fill="#fff"
-            fontSize="26"
-            fontWeight="700"
-            textAnchor="middle"
-            fontFamily="DM Serif Display, serif"
-          >
-            {bmi}
-          </text>
-          <text
-            x={cx} y={cy - 7}
-            fill={cat?.color}
-            fontSize="9"
-            textAnchor="middle"
-            fontWeight="700"
-            letterSpacing="0.1em"
-          >
-            {cat?.label?.toUpperCase()}
-          </text>
-        </>
-      ) : (
-        <text x={cx} y={cy - 10} fill="rgba(255,255,255,0.2)" fontSize="10" textAnchor="middle">
-          No data
-        </text>
-      )}
+  {/* BMI value */}
+<text x={cx} y={cy -14}
+  fill="#fff" fontSize="30" fontWeight="700"
+  textAnchor="middle" fontFamily="DM Serif Display, serif">
+  {bmi}
+</text>
+<text x={cx} y={cy + 5}
+  fill={cat?.color} fontSize="8" textAnchor="middle"
+  fontWeight="700" letterSpacing="0.12em">
+  {cat?.label?.toUpperCase()}
+</text>
 
-      {/* Labels */}
-      {labels.map((l, i) => (
-        <text key={i} x={l.x} y={l.y} fill={l.color} fontSize="7.5" textAnchor="middle" opacity="0.6" fontWeight="600">
-          {l.text}
-        </text>
-      ))}
+
 
     </svg>
   );

@@ -56,6 +56,16 @@ export default function ChatBotPremium() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [disease, setDisease] = useState<string>("");
+  const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "hi", label: "हिंदी" },
+  { code: "ta", label: "தமிழ்" },
+  { code: "bn", label: "বাংলা" },
+  { code: "te", label: "తెలుగు" },
+  { code: "mr", label: "मराठी" },
+];
+
+const [language, setLanguage] = useState("en");
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -189,7 +199,7 @@ TONE EXAMPLES:
 
 User asks: "${input}"
 
-Respond now as CureMe:`;
+Respond now as CureMe in ${LANGUAGES.find(l => l.code === language)?.label || "English"}:`;
 
     try {
       const aiResponse = await askAI(prompt);
@@ -457,12 +467,15 @@ Respond now as CureMe:`;
                   <div className="dropdown-name">{user.displayName || "User"}</div>
                   <div className="dropdown-email">{user.email}</div>
                 </div>
-                <a href="/dashboard" className="dropdown-item">
-                  <span>📊</span> Dashboard
-                </a>
                 <a href="/survey" className="dropdown-item">
                   <span>👤</span> Edit Profile
                 </a>
+                <a href="/dashboard" className="dropdown-item">
+                  <span>📊</span> Dashboard
+                </a>
+                <a href="/symptoms" className="dropdown-item">
+  <span>🔍</span> Symptom Checker
+</a>
                 <button className="dropdown-item" onClick={handleClearChat}>
                   <span>🗑</span> Clear Chat
                 </button>
@@ -559,6 +572,29 @@ Respond now as CureMe:`;
               </div>
 
               <div className="cure-input-wrap">
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+  <select
+    value={language}
+    onChange={(e) => setLanguage(e.target.value)}
+    style={{
+      background: "rgba(255,255,255,0.06)",
+      border: "1px solid rgba(255,255,255,0.1)",
+      borderRadius: 8,
+      color: "rgba(255,255,255,0.7)",
+      fontSize: "0.72rem",
+      padding: "4px 10px",
+      fontFamily: "Sora, sans-serif",
+      cursor: "pointer",
+      outline: "none",
+    }}
+  >
+    {LANGUAGES.map((l) => (
+      <option key={l.code} value={l.code} style={{ background: "#13121f" }}>
+        {l.label}
+      </option>
+    ))}
+  </select>
+</div>
                 <div className="cure-input-row">
                   <input
                     className="cure-input"

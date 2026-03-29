@@ -391,6 +391,7 @@ export default function LandingPage() {
           <li><a href="#conditions">Conditions</a></li>
           <li><a href="#how">How it works</a></li>
           <li><a href="/dashboard">Dashboard</a></li>
+           <li><a href="/symptoms">Symptoms</a></li>
           <li><UserMenu /></li>
         </ul>
 

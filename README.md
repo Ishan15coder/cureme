@@ -1,22 +1,22 @@
 # 🩺 CureMe AI
 
-CureMe AI is a personalised health companion web app that provides warm, knowledgeable guidance tailored to a user's medical profile and condition. Users sign up, complete a health survey, and can then ask questions about symptoms, diet, medication, and daily habits — receiving clear, caring, non-alarming responses powered by Google Gemini AI.
+CureMe AI is a personalised health companion web app that provides warm, knowledgeable guidance tailored to a user's medical profile and condition. Users sign up, complete a health survey, and can then ask questions about symptoms, diet, medication, and daily habits — receiving clear, caring, non-alarming responses powered by Cohere AI.
 
 ---
 
-## ✨ Features
+✨ Features
 
-- **Condition-Aware Chat** — Responses tailored to Diabetes, PCOS, Hypertension, Obesity, or General Health
-- **Personalised Health Profile** — Survey collects age, gender, height, weight, health issues, medications, and allergies — all used to personalise every AI response
-- **BMI-Aware Responses** — BMI is calculated automatically and factored into dietary and lifestyle advice
-- **Medication & Allergy Safety** — AI never suggests foods or remedies that conflict with the user's allergies or current medications
-- **Natural Conversation** — Ask health questions the way you'd ask a knowledgeable friend
-- **Firebase Authentication** — Email/password and Google sign-in with persistent sessions
-- **Chat History** — Conversations are saved per user in Firestore and restored on every sign-in
-- **Edit Profile Anytime** — Users can update their health profile from the nav dropdown
-- **Responsive Design** — Works seamlessly on desktop and mobile
-- **Non-Alarming Tone** — Calm, caring responses that inform without causing panic
-- **Instant Answers** — No appointments, no waiting — guidance in seconds
+Personalised Health Profile — 3-step survey collects age, gender, height, weight, health issues, medications, and allergies
+BMI-Aware Responses — BMI is calculated automatically and factored into every AI response
+Medication & Allergy Safety — AI never suggests anything that conflicts with the user's allergies or medications
+Condition-Aware Chat — Responses tailored to Diabetes, PCOS, Hypertension, Obesity, or General Health
+Health Dashboard — Visual BMI gauge, health score ring, and profile summary with body metrics
+Chat History — Conversations saved per user in Firestore and restored on every sign-in
+Firebase Authentication — Email/password and Google sign-in with persistent sessions
+Edit Profile Anytime — Update health profile from the nav dropdown
+Clear Chat — Wipe conversation history with one click
+Responsive Design — Works seamlessly on desktop and mobile
+Non-Alarming Tone — Calm, caring responses that inform without causing panic
 
 ---
 
@@ -26,7 +26,7 @@ CureMe AI is a personalised health companion web app that provides warm, knowled
 |---|---|
 | Framework | [Next.js](https://nextjs.org/) (App Router) |
 | Language | TypeScript |
-| AI | [Google Gemini](https://ai.google.dev/) |
+| AI | [Cohere](https://cohere.com/) |
 | Auth | [Firebase Authentication](https://firebase.google.com/) |
 | Database | [Cloud Firestore](https://firebase.google.com/products/firestore) |
 | Icons | [Lucide React](https://lucide.dev/) |
@@ -40,70 +40,27 @@ CureMe AI is a personalised health companion web app that provides warm, knowled
 
 - Node.js 18+
 - npm or yarn
-- A Google Gemini API key
+- A Cohere API key
 - A Firebase project with Authentication and Firestore enabled
 
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-org/cureme-ai.git
-cd cureme-ai
-
-# Install dependencies
-npm install
-```
-
-### Environment Variables
-
-Create a `.env.local` file in the root of the project and add the following:
-
-```env
-# Gemini
-GEMINI_API_KEY=your_gemini_api_key
-
-# Firebase
-NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-```
-
-### Running Locally
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Building for Production
-
-```bash
-npm run build
-```
-
----
-
-## 📁 Project Structure
+📁 Project Structure
 
 ```
 cureme-ai/
 ├── app/
-│   ├── page.tsx            # Landing page (auth-aware nav)
+│   ├── page.tsx              # Landing page (auth-aware nav)
 │   ├── chat/
-│   │   └── page.tsx        # Chat interface with profile-aware AI
+│   │   └── page.tsx          # Chat interface with profile-aware AI
 │   ├── login/
-│   │   └── page.tsx        # Authentication (email + Google)
-│   └── survey/
-│       └── page.tsx        # 3-step health profile survey
+│   │   └── page.tsx          # Authentication (email + Google)
+│   ├── survey/
+│   │   └── page.tsx          # 3-step health profile survey
+│   └── dashboard/
+│       └── page.tsx          # Health dashboard with BMI gauge
 ├── lib/
-│   └── gemini.ts           # Gemini API integration
-├── public/                 # Static assets
+│   └── cohere.ts             # Cohere API integration
+├── public/
 └── README.md
-```
 
 ---
 
@@ -131,22 +88,6 @@ firestore/
 ```
 
 ---
-
-## 🔐 Firestore Security Rules
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /profiles/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
-    match /chats/{uid}/messages/{messageId} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
-  }
-}
-```
 
 ---
 

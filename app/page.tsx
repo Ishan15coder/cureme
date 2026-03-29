@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
- import { Droplets, Flower2, Heart, Scale, Sparkles } from "lucide-react";
+import { Droplets, Flower2, Heart, Scale, Sparkles } from "lucide-react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
@@ -19,8 +19,8 @@ const auth = getAuth(app);
 
 export default function LandingPage() {
   const [user, setUser] = useState<any>(null);
-const [authReady, setAuthReady] = useState(false);
-const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -60,13 +60,13 @@ const [toast, setToast] = useState<{ type: string; message: string } | null>(nul
     return () => observer.disconnect();
   }, []);
 
- useEffect(() => {
-  const handleClick = (e: MouseEvent) => {
-    if (!(e.target as HTMLElement).closest(".user-menu")) setDropdownOpen(false);
-  };
-  document.addEventListener("click", handleClick);
-  return () => document.removeEventListener("click", handleClick);
-}, []);
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".user-menu")) setDropdownOpen(false);
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -76,74 +76,74 @@ const [toast, setToast] = useState<{ type: string; message: string } | null>(nul
   };
 
   const getInitials = (u: User) => {
-  if (u.displayName) {
-    const parts = u.displayName.trim().split(" ");
-    return parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0][0];
-  }
-  return u.email?.[0]?.toUpperCase() ?? "?";
-};
+    if (u.displayName) {
+      const parts = u.displayName.trim().split(" ");
+      return parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0][0];
+    }
+    return u.email?.[0]?.toUpperCase() ?? "?";
+  };
 
   // ── Shared auth UI (used in both desktop list-item and mobile div) ──────────
- const UserMenu = ({ mobile = false }: { mobile?: boolean }) => {
-  if (!authReady) {
-    return <div className="nav-auth-placeholder" />;
-  }
+  const UserMenu = ({ mobile = false }: { mobile?: boolean }) => {
+    if (!authReady) {
+      return <div className="nav-auth-placeholder" />;
+    }
 
-  if (user) {
-    // Logged in — mobile shows simple "Open Chat" button
-    if (mobile) {
+    if (user) {
+      // Logged in — mobile shows simple "Open Chat" button
+      if (mobile) {
+        return (
+          <a href="./chat" className="nav-cta">Open Chat ↗</a>
+        );
+      }
+
+      // Logged in — desktop shows avatar dropdown
       return (
-        <a href="./chat" className="nav-cta">Open Chat ↗</a>
+        <div className="user-menu">
+          <button className="user-avatar-btn" onClick={() => setDropdownOpen((o) => !o)}>
+            {user.photoURL ? (
+              <img src={user.photoURL} alt="avatar" className="user-photo" />
+            ) : (
+              <div className="user-avatar-circle">{getInitials(user)}</div>
+            )}
+            <span className="user-name">
+              {user.displayName?.split(" ")[0] || user.email?.split("@")[0]}
+            </span>
+            <svg className={`user-chevron ${dropdownOpen ? "open" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {dropdownOpen && (
+            <div className="user-dropdown">
+              <div className="dropdown-header">
+                <div className="dropdown-name">{user.displayName || "User"}</div>
+                <div className="dropdown-email">{user.email}</div>
+              </div>
+              <a href="./chat" className="dropdown-item">
+                <span className="dropdown-item-icon">💬</span> Open Chat
+              </a>
+              <button className="dropdown-item danger" onClick={handleSignOut}>
+                <span className="dropdown-item-icon">↩</span> Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       );
     }
 
-    // Logged in — desktop shows avatar dropdown
+    // Logged out — show Login + Open App on both desktop and mobile
     return (
-      <div className="user-menu">
-        <button className="user-avatar-btn" onClick={() => setDropdownOpen((o) => !o)}>
-          {user.photoURL ? (
-            <img src={user.photoURL} alt="avatar" className="user-photo" />
-          ) : (
-            <div className="user-avatar-circle">{getInitials(user)}</div>
-          )}
-          <span className="user-name">
-            {user.displayName?.split(" ")[0] || user.email?.split("@")[0]}
-          </span>
-          <svg className={`user-chevron ${dropdownOpen ? "open" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-
-        {dropdownOpen && (
-          <div className="user-dropdown">
-            <div className="dropdown-header">
-              <div className="dropdown-name">{user.displayName || "User"}</div>
-              <div className="dropdown-email">{user.email}</div>
-            </div>
-            <a href="./chat" className="dropdown-item">
-              <span className="dropdown-item-icon">💬</span> Open Chat
-            </a>
-            <button className="dropdown-item danger" onClick={handleSignOut}>
-              <span className="dropdown-item-icon">↩</span> Sign Out
-            </button>
-          </div>
-        )}
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <a href="./login" className="nav-login-ghost">Login</a>
+        <a href="./chat" className="nav-cta">Open App ↗</a>
       </div>
     );
-  }
-
-  // Logged out — show Login + Open App on both desktop and mobile
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      <a href="./login" className="nav-login-ghost">Login</a>
-      <a href="./chat" className="nav-cta">Open App ↗</a>
-    </div>
-  );
-};
+  };
   return (
     <>
       <title>{`CureMe AI — Your AI Health Companion`}</title>
-    <style>{`
+      <style>{`
   :root {
     --ink: #06060e; --surface: #0d0d1a; --surface2: #13121f;
     --violet: #7c3aed; --indigo: #4f46e5; --cyan: #2563eb; --rose: #e879a0;
@@ -367,7 +367,7 @@ const [toast, setToast] = useState<{ type: string; message: string } | null>(nul
 `}</style>
 
       <div className="blobs">
-        <div className="blob blob-1"/><div className="blob blob-2"/><div className="blob blob-3"/>
+        <div className="blob blob-1" /><div className="blob blob-2" /><div className="blob blob-3" />
       </div>
 
       {toast && (
@@ -377,43 +377,44 @@ const [toast, setToast] = useState<{ type: string; message: string } | null>(nul
         </div>
       )}
 
-    {/* ── NAV ── */}
-<nav>
-  
-  <a className="nav-logo" href="#">
-    <div className="nav-logo-icon">🩺</div>
-    CureMe AI
-  </a>
+      {/* ── NAV ── */}
+      <nav>
 
-  {/* Desktop nav */}
-  <ul className="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#conditions">Conditions</a></li>
-    <li><a href="#how">How it works</a></li>
-    <li><UserMenu /></li>
-  </ul>
+        <a className="nav-logo" href="#">
+          <div className="nav-logo-icon">🩺</div>
+          CureMe AI
+        </a>
 
-  {/* Mobile nav */}
-  <div className="mobile-nav-auth">
-    <UserMenu mobile />
-  </div>
-</nav>
+        {/* Desktop nav */}
+        <ul className="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#conditions">Conditions</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><UserMenu /></li>
+        </ul>
+
+        {/* Mobile nav */}
+        <div className="mobile-nav-auth">
+          <UserMenu mobile />
+        </div>
+      </nav>
 
       {/* ── HERO ── */}
       <section className="hero">
         {authReady && user && (
           <div className="hero-user-pill">
-            <span className="hero-user-dot"/>
+            <span className="hero-user-dot" />
             Signed in as {user.displayName || user.email}
           </div>
         )}
         <div className="hero-badge">
-          <span className="hero-badge-dot"/>
+          <span className="hero-badge-dot" />
           AI Health Companion · Powered by Cohere
         </div>
-        <h1 className="hero-title">Your health,<br/><em>understood.</em></h1>
+        <h1 className="hero-title">Your health,<br /><em>understood.</em></h1>
         <p className="hero-sub">
-          CureMe AI gives you warm, knowledgeable guidance tailored to your condition — whether it's diabetes, PCOS, hypertension, or more.
+          Your personal AI health companion that knows your conditions, medications, and allergies — and gives advice that's actually tailored to you.
         </p>
         <div className="hero-actions">
           <a href="./chat" className="btn-primary">Start Chatting →</a>
@@ -421,12 +422,12 @@ const [toast, setToast] = useState<{ type: string; message: string } | null>(nul
         </div>
         <div className="hero-visual">
           <div className="hero-visual-bar">
-            <div className="hv-dot"/><div className="hv-dot"/><div className="hv-dot"/>
+            <div className="hv-dot" /><div className="hv-dot" /><div className="hv-dot" />
             <span className="hv-label">CureMe AI — Health Chat</span>
           </div>
           <div className="hero-visual-chat">
             <div className="hv-msg user"><div className="hv-avatar user">👤</div><div className="hv-bubble user">What foods should I avoid with diabetes?</div></div>
-            <div className="hv-msg"><div className="hv-avatar ai">✦</div><div className="hv-bubble ai"><strong>Foods to limit with Diabetes:</strong><br/>Avoid refined carbs like white bread and sugary drinks. Focus on whole grains, lean proteins, and fibre-rich vegetables. <em>Always consult your doctor for personalized advice.</em></div></div>
+            <div className="hv-msg"><div className="hv-avatar ai">✦</div><div className="hv-bubble ai"><strong>Foods to limit with Diabetes:</strong><br />Avoid refined carbs like white bread and sugary drinks. Focus on whole grains, lean proteins, and fibre-rich vegetables. <em>Always consult your doctor for personalized advice.</em></div></div>
             <div className="hv-msg user"><div className="hv-avatar user">👤</div><div className="hv-bubble user">Any morning routine tips?</div></div>
             <div className="hv-msg"><div className="hv-avatar ai">✦</div><div className="hv-bubble ai">Start with a 10-min walk, check blood sugar, eat a balanced breakfast with protein. Hydrate well. <em>Always consult your doctor for personalized advice.</em></div></div>
           </div>
@@ -436,54 +437,94 @@ const [toast, setToast] = useState<{ type: string; message: string } | null>(nul
       {/* ── FEATURES ── */}
       <section className="features" id="features">
         <p className="section-label reveal">What we offer</p>
-        <h2 className="section-title reveal">Built for <em style={{fontStyle:"italic",color:"#a78bfa"}}>real</em> health questions</h2>
+        <h2 className="section-title reveal">Built around <em style={{ fontStyle: 'italic', color: '#a78bfa' }}>you</em>, not just your condition</h2>
         <div className="features-grid">
-          <div className="feature-card reveal"><div className="feature-icon violet">🧠</div><h3 className="feature-title">Condition-Aware AI</h3><p className="feature-desc">Tell us your condition once and every response is tailored — diet, routine, and medication context all adjusted automatically.</p></div>
-          <div className="feature-card reveal"><div className="feature-icon cyan">💬</div><h3 className="feature-title">Natural Conversation</h3><p className="feature-desc">Ask anything the way you'd ask a knowledgeable friend. No forms, no menus — just a warm, clear dialogue.</p></div>
-          <div className="feature-card reveal"><div className="feature-icon rose">🌿</div><h3 className="feature-title">Non-Alarming Tone</h3><p className="feature-desc">CureMe is designed to inform, not scare. Responses are calm, caring, and never use medical jargon without explanation.</p></div>
-          <div className="feature-card reveal"><div className="feature-icon green">⚡</div><h3 className="feature-title">Instant Answers</h3><p className="feature-desc">No waiting for appointments. Get thoughtful guidance on symptoms, diet, and daily habits in seconds, any time of day.</p></div>
+          <div className="feature-card reveal">
+            <div className="feature-icon violet">🧬</div>
+            <h3 className="feature-title">Knows Your Full Profile</h3>
+            <p className="feature-desc">Age, BMI, medications, allergies — every response is built around your unique health picture, not a generic condition.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon cyan">💊</div>
+            <h3 className="feature-title">Medication-Aware</h3>
+            <p className="feature-desc">CureMe understands your current medications and never suggests anything that could cause an interaction or conflict.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon rose">🛡️</div>
+            <h3 className="feature-title">Allergy Safe</h3>
+            <p className="feature-desc">Your allergies are remembered across every conversation. Dietary advice will never include something that could harm you.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon green">⚡</div>
+            <h3 className="feature-title">Instant & Always Available</h3>
+            <p className="feature-desc">No waiting rooms, no appointments, no cost. Get thoughtful, personalised health guidance any time of day or night.</p>
+          </div>
         </div>
       </section>
 
       {/* ── CONDITIONS ── */}
-  
-<section className="conditions" id="conditions">
-  <p className="section-label reveal">Supported conditions</p>
-  <h2 className="section-title reveal">Tailored for your diagnosis</h2>
-  <div className="conditions-grid">
-    <div className="condition-pill reveal"><Droplets size={16} strokeWidth={1.5} color="#f87171" /> Diabetes</div>
-    <div className="condition-pill reveal"><Flower2 size={16} strokeWidth={1.5} color="#e879a0" /> PCOS</div>
-    <div className="condition-pill reveal"><Heart size={16} strokeWidth={1.5} color="#fb923c" /> Hypertension</div>
-    <div className="condition-pill reveal"><Scale size={16} strokeWidth={1.5} color="#a78bfa" /> Obesity</div>
-    <div className="condition-pill reveal"><Sparkles size={16} strokeWidth={1.5} color="#60a5fa" /> General Health</div>
-  </div>
-</section>
+
+      <section className="conditions" id="conditions">
+        <p className="section-label reveal">Supported conditions</p>
+        <h2 className="section-title reveal">Tailored for your diagnosis</h2>
+        <div className="conditions-grid">
+          <div className="condition-pill reveal"><Droplets size={16} strokeWidth={1.5} color="#f87171" /> Diabetes</div>
+          <div className="condition-pill reveal"><Flower2 size={16} strokeWidth={1.5} color="#e879a0" /> PCOS</div>
+          <div className="condition-pill reveal"><Heart size={16} strokeWidth={1.5} color="#fb923c" /> Hypertension</div>
+          <div className="condition-pill reveal"><Scale size={16} strokeWidth={1.5} color="#a78bfa" /> Obesity</div>
+          <div className="condition-pill reveal"><Sparkles size={16} strokeWidth={1.5} color="#60a5fa" /> General Health</div>
+        </div>
+      </section>
       {/* ── HOW ── */}
       <section className="how" id="how">
         <p className="section-label reveal">How it works</p>
-        <h2 className="section-title reveal">Three steps to clarity</h2>
+        <h2 className="section-title reveal">Personalised guidance in <em style={{ fontStyle: 'italic', color: '#a78bfa' }}>minutes</em></h2>
         <div className="how-steps">
-          <div className="how-step reveal"><div className="how-step-num">01</div><h3 className="how-step-title">Pick your condition</h3><p className="how-step-desc">Select from our supported conditions or leave it blank for general health guidance.</p></div>
-          <div className="how-step reveal"><div className="how-step-num">02</div><h3 className="how-step-title">Ask your question</h3><p className="how-step-desc">Type naturally — symptoms, diet, medication, or lifestyle. No jargon needed.</p></div>
-          <div className="how-step reveal"><div className="how-step-num">03</div><h3 className="how-step-title">Get clear guidance</h3><p className="how-step-desc">Receive a focused, warm response tailored to you — with a gentle reminder to consult your doctor.</p></div>
+          <div className="how-step reveal">
+            <div className="how-step-num">01</div>
+            <h3 className="how-step-title">Build your health profile</h3>
+            <p className="how-step-desc">Tell us your age, weight, conditions, medications, and allergies once — in under 2 minutes.</p>
+          </div>
+          <div className="how-step reveal">
+            <div className="how-step-num">02</div>
+            <h3 className="how-step-title">Ask anything</h3>
+            <p className="how-step-desc">Type naturally — symptoms, diet, medication, or lifestyle. CureMe already knows your context.</p>
+          </div>
+          <div className="how-step reveal">
+            <div className="how-step-num">03</div>
+            <h3 className="how-step-title">Get answers built for you</h3>
+            <p className="how-step-desc">Receive advice that accounts for your BMI, allergies, and medications — not just your condition label.</p>
+          </div>
         </div>
       </section>
 
       {/* ── STATS ── */}
       <div className="stats">
         <div className="stats-inner">
-          <div className="stat reveal"><div className="stat-num">4+</div><div className="stat-label">Conditions supported</div></div>
-          <div className="stat reveal"><div className="stat-num">120</div><div className="stat-label">Word limit · Focused answers</div></div>
-          <div className="stat reveal"><div className="stat-num">0</div><div className="stat-label">Unnecessary alarm</div></div>
-          <div className="stat reveal"><div className="stat-num">∞</div><div className="stat-label">Questions you can ask</div></div>
+          <div className="stat reveal">
+            <div className="stat-num">7</div>
+            <div className="stat-label">Profile data points analysed per response</div>
+          </div>
+          <div className="stat reveal">
+            <div className="stat-num">500M+</div>
+            <div className="stat-label">Indians living with chronic conditions</div>
+          </div>
+          <div className="stat reveal">
+            <div className="stat-num">24/7</div>
+            <div className="stat-label">Available — no appointments needed</div>
+          </div>
+          <div className="stat reveal">
+            <div className="stat-num">0₹</div>
+            <div className="stat-label">Cost — completely free to use</div>
+          </div>
         </div>
       </div>
 
       {/* ── CTA ── */}
       <section className="cta-section">
         <div className="cta-card reveal">
-          <h2>Start your health<br/>conversation today.</h2>
-          <p>{user ? "Pick up right where you left off." : "Free to use. No sign-up required. Just ask."}</p>
+          <h2>Your health deserves<br /><em>personal</em> answers.</h2>
+          <p>{user ? "Pick up right where you left off." : "Set up your health profile in 2 minutes. Free forever."}</p>
           <a href="./chat" className="btn-primary">Open CureMe AI →</a>
         </div>
       </section>

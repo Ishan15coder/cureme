@@ -3,23 +3,23 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  onAuthStateChanged,
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signInWithPopup,
+    GoogleAuthProvider,
+    onAuthStateChanged,
 } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
-  authDomain: "cureme-ed6d7.firebaseapp.com",
-  projectId: "cureme-ed6d7",
-  storageBucket: "cureme-ed6d7.firebasestorage.app",
-  messagingSenderId: "495173236710",
-  appId: "1:495173236710:web:6bea8835762bdf70618827",
-  measurementId: "G-DRFWEELWCK"
+    apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
+    authDomain: "cureme-ed6d7.firebaseapp.com",
+    projectId: "cureme-ed6d7",
+    storageBucket: "cureme-ed6d7.firebasestorage.app",
+    messagingSenderId: "495173236710",
+    appId: "1:495173236710:web:6bea8835762bdf70618827",
+    measurementId: "G-DRFWEELWCK"
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -28,109 +28,109 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 export default function LoginPage() {
-  const [mode, setMode] = useState("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+    const [mode, setMode] = useState("login");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  // ── KEY FIX: only redirect if user was ALREADY signed in before arriving ──
-  // We use a flag so that sign-in actions we trigger ourselves don't get
-  // caught by this listener and cause a double-redirect.
-  const [authChecked, setAuthChecked] = useState(false);
+    // ── KEY FIX: only redirect if user was ALREADY signed in before arriving ──
+    // We use a flag so that sign-in actions we trigger ourselves don't get
+    // caught by this listener and cause a double-redirect.
+    const [authChecked, setAuthChecked] = useState(false);
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (!authChecked) {
-        // First resolution — if user already has a session, send them home
-        setAuthChecked(true);
-        if (user) {
-          window.location.href = "./";
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (!authChecked) {
+                // First resolution — if user already has a session, send them home
+                setAuthChecked(true);
+                if (user) {
+                    window.location.href = "./";
+                }
+            }
+            // After the first check we ignore further state changes here.
+            // Redirects after login are handled explicitly in the action handlers.
+        });
+        return () => unsub();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Redirect helper (called ONLY after a successful login action) ──────────
+    const redirectAfterAuth = async (isNew = false) => {
+        sessionStorage.setItem("cureme_just_authed", "true");
+        sessionStorage.setItem("cureme_is_new", String(isNew));
+
+        if (isNew) {
+            // Check if they already filled the survey before
+            const snap = await getDoc(doc(db, "profiles", auth.currentUser!.uid));
+            if (snap.exists()) {
+                // Profile already exists — skip survey
+                window.location.href = "/";
+            } else {
+                // Brand new user — show survey
+                window.location.href = "/survey";
+            }
+        } else {
+            window.location.href = "/";
         }
-      }
-      // After the first check we ignore further state changes here.
-      // Redirects after login are handled explicitly in the action handlers.
-    });
-    return () => unsub();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    };
 
-  // ── Redirect helper (called ONLY after a successful login action) ──────────
-const redirectAfterAuth = async (isNew = false) => {
-  sessionStorage.setItem("cureme_just_authed", "true");
-  sessionStorage.setItem("cureme_is_new", String(isNew));
-  
-  if (isNew) {
-    // Check if they already filled the survey before
-    const snap = await getDoc(doc(db, "profiles", auth.currentUser!.uid));
-    if (snap.exists()) {
-      // Profile already exists — skip survey
-      window.location.href = "/";
-    } else {
-      // Brand new user — show survey
-      window.location.href = "/survey";
-    }
-  } else {
-    window.location.href = "/";
-  }
-};
+    // AFTER
+    // AFTER
+    const friendlyError = (code: string) => {
+        const map: Record<string, string> = {
+            "auth/invalid-email": "Please enter a valid email address.",
+            "auth/user-not-found": "No account found with that email.",
+            "auth/wrong-password": "...",
+            "auth/email-already-in-use": "...",
+            "auth/weak-password": "...",
+            "auth/popup-closed-by-user": "...",
+            "auth/too-many-requests": "...",
+            "auth/invalid-credential": "Invalid credentials. Please check and try again.",
+        };
+        return map[code] || "Something went wrong. Please try again.";
+    };
 
-  // AFTER
-// AFTER
-const friendlyError = (code: string) => {
-  const map: Record<string, string> = {
-    "auth/invalid-email": "Please enter a valid email address.",
-    "auth/user-not-found": "No account found with that email.",
-    "auth/wrong-password": "...",
-    "auth/email-already-in-use": "...",
-    "auth/weak-password": "...",
-    "auth/popup-closed-by-user": "...",
-    "auth/too-many-requests": "...",
-    "auth/invalid-credential": "Invalid credentials. Please check and try again.",
-  };
-  return map[code] || "Something went wrong. Please try again.";
-};
+    // ── Email / password ───────────────────────────────────────────────────────
+    const handleEmailAuth = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+        setLoading(true);
+        try {
+            if (mode === "login") {
+                await signInWithEmailAndPassword(auth, email, password);
+                redirectAfterAuth(false);
+            } else {
+                await createUserWithEmailAndPassword(auth, email, password);
+                redirectAfterAuth(true);
+            }
+        } catch (err: unknown) {
+            const code = (err as { code?: string })?.code ?? "";
+            setError(friendlyError(code));
+            setLoading(false);
+        }
+    };
 
-  // ── Email / password ───────────────────────────────────────────────────────
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      if (mode === "login") {
-        await signInWithEmailAndPassword(auth, email, password);
-        redirectAfterAuth(false);
-      } else {
-        await createUserWithEmailAndPassword(auth, email, password);
-        redirectAfterAuth(true);
-      }
-    } catch (err: unknown) {
-  const code = (err as { code?: string })?.code ?? "";
-  setError(friendlyError(code));
-  setLoading(false);
-}
-  };
+    // ── Google ─────────────────────────────────────────────────────────────────
+    const handleGoogle = async () => {
+        setError("");
+        setLoading(true);
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const isNew =
+                result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+            redirectAfterAuth(isNew);
+        }
+        catch (err: unknown) {
+            const code = (err as { code?: string })?.code ?? "";
+            setError(friendlyError(code));
+            setLoading(false);
+        }
+    };
 
-  // ── Google ─────────────────────────────────────────────────────────────────
-  const handleGoogle = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const isNew =
-        result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
-      redirectAfterAuth(isNew);
-    } 
-catch (err: unknown) {
-  const code = (err as { code?: string })?.code ?? "";
-  setError(friendlyError(code));
-  setLoading(false);
-}
-  };
-
-  return (
-    <>
-      <title>CureMe AI — {mode === "login" ? "Sign In" : "Create Account"}</title>
-      <style>{`
+    return (
+        <>
+            <title>CureMe AI — {mode === "login" ? "Sign In" : "Create Account"}</title>
+            <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -241,101 +241,101 @@ catch (err: unknown) {
         }
       `}</style>
 
-      <div className="blobs">
-        <div className="blob blob-1"/><div className="blob blob-2"/><div className="blob blob-3"/>
-      </div>
-
-      <nav>
-        <a className="nav-logo" href="./">
-          <div className="nav-logo-icon">🩺</div>
-          CureMe AI
-        </a>
-        <a className="nav-back" href="./">← Back to home</a>
-      </nav>
-
-      <main className="page">
-        <div className="card">
-          <div className="card-badge">
-            <span className="badge-dot"/>
-            {mode === "login" ? "Welcome back" : "Get started free"}
-          </div>
-
-          <h1 className="card-title">
-            {mode === "login" ? <>Sign in to <em>CureMe</em></> : <>Create your <em>account</em></>}
-          </h1>
-          <p className="card-sub">
-            {mode === "login"
-              ? "Continue your health journey where you left off."
-              : "Join CureMe AI — your personalised health companion."}
-          </p>
-
-          {/* Google sign-in */}
-          <button className="btn-google" onClick={handleGoogle} disabled={loading}>
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Continue with Google
-          </button>
-
-          <div className="divider"><span>or</span></div>
-
-          {error && <div className="error-msg"><span>⚠</span> {error}</div>}
-
-          <form onSubmit={handleEmailAuth}>
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <input
-                className="form-input"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+            <div className="blobs">
+                <div className="blob blob-1" /><div className="blob blob-2" /><div className="blob blob-3" />
             </div>
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                className="form-input"
-                type="password"
-                placeholder={mode === "signup" ? "Min. 6 characters" : "Your password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <button className="btn-primary" type="submit" disabled={loading}>
-              {loading
-                ? <><span className="spinner"/> Please wait…</>
-                : mode === "login" ? "Sign In →" : "Create Account →"}
-            </button>
-          </form>
 
-          <div className="toggle-row">
-            {mode === "login" ? (
-              <>Don't have an account?{" "}
-                <button className="toggle-btn" onClick={() => { setMode("signup"); setError(""); }}>
-                  Sign up free
-                </button>
-              </>
-            ) : (
-              <>Already have an account?{" "}
-                <button className="toggle-btn" onClick={() => { setMode("login"); setError(""); }}>
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </main>
+            <nav>
+                <a className="nav-logo" href="./">
+                    <div className="nav-logo-icon">🩺</div>
+                    CureMe AI
+                </a>
+                <a className="nav-back" href="./">← Back to home</a>
+            </nav>
 
-      <footer>
-        <span className="footer-logo">🩺 CureMe AI</span>
-        <p className="footer-note">For informational purposes only · Not a substitute for professional medical advice</p>
-      </footer>
-    </>
-  );
+            <main className="page">
+                <div className="card">
+                    <div className="card-badge">
+                        <span className="badge-dot" />
+                        {mode === "login" ? "Welcome back" : "Get started free"}
+                    </div>
+
+                    <h1 className="card-title">
+                        {mode === "login" ? <>Sign in to <em>CureMe</em></> : <>Create your <em>account</em></>}
+                    </h1>
+                    <p className="card-sub">
+                        {mode === "login"
+                            ? "Continue your health journey where you left off."
+                            : "Join CureMe AI — your personalised health companion."}
+                    </p>
+
+                    {/* Google sign-in */}
+                    <button className="btn-google" onClick={handleGoogle} disabled={loading}>
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                        </svg>
+                        Continue with Google
+                    </button>
+
+                    <div className="divider"><span>or</span></div>
+
+                    {error && <div className="error-msg"><span>⚠</span> {error}</div>}
+
+                    <form onSubmit={handleEmailAuth}>
+                        <div className="form-group">
+                            <label className="form-label">Email Address</label>
+                            <input
+                                className="form-input"
+                                type="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Password</label>
+                            <input
+                                className="form-input"
+                                type="password"
+                                placeholder={mode === "signup" ? "Min. 6 characters" : "Your password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <button className="btn-primary" type="submit" disabled={loading}>
+                            {loading
+                                ? <><span className="spinner" /> Please wait…</>
+                                : mode === "login" ? "Sign In →" : "Create Account →"}
+                        </button>
+                    </form>
+
+                    <div className="toggle-row">
+                        {mode === "login" ? (
+                            <>Don't have an account?{" "}
+                                <button className="toggle-btn" onClick={() => { setMode("signup"); setError(""); }}>
+                                    Sign up free
+                                </button>
+                            </>
+                        ) : (
+                            <>Already have an account?{" "}
+                                <button className="toggle-btn" onClick={() => { setMode("login"); setError(""); }}>
+                                    Sign in
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </main>
+
+            <footer>
+                <span className="footer-logo">🩺 CureMe AI</span>
+                <p className="footer-note">For informational purposes only · Not a substitute for professional medical advice</p>
+            </footer>
+        </>
+    );
 }

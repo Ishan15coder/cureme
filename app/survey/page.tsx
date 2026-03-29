@@ -8,13 +8,13 @@ import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
-  authDomain: "cureme-ed6d7.firebaseapp.com",
-  projectId: "cureme-ed6d7",
-  storageBucket: "cureme-ed6d7.firebasestorage.app",
-  messagingSenderId: "495173236710",
-  appId: "1:495173236710:web:6bea8835762bdf70618827",
-  measurementId: "G-DRFWEELWCK"
+    apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
+    authDomain: "cureme-ed6d7.firebaseapp.com",
+    projectId: "cureme-ed6d7",
+    storageBucket: "cureme-ed6d7.firebasestorage.app",
+    messagingSenderId: "495173236710",
+    appId: "1:495173236710:web:6bea8835762bdf70618827",
+    measurementId: "G-DRFWEELWCK"
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -22,70 +22,70 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 type SurveyData = {
-  age: string;
-  gender: string;
-  heightCm: string;
-  weightKg: string;
-  healthIssues: string;
-  medications: string;
-  allergies: string;
+    age: string;
+    gender: string;
+    heightCm: string;
+    weightKg: string;
+    healthIssues: string;
+    medications: string;
+    allergies: string;
 };
 
 const STEPS = ["Personal", "Body", "Health"];
 
 export default function SurveyPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [authReady, setAuthReady] = useState(false);
-  const [step, setStep] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [form, setForm] = useState<SurveyData>({
-    age: "", gender: "", heightCm: "", weightKg: "",
-    healthIssues: "", medications: "", allergies: "",
-  });
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      if (!u) { router.push("/login"); return; }
-      setUser(u);
-      setAuthReady(true);
-      // Check if profile already exists
-      const snap = await getDoc(doc(db, "profiles", u.uid));
-      if (snap.exists()) {
-        const data = snap.data() as SurveyData;
-        setForm(data);
-        setIsEdit(true);
-      }
+    const router = useRouter();
+    const [user, setUser] = useState<User | null>(null);
+    const [authReady, setAuthReady] = useState(false);
+    const [step, setStep] = useState(0);
+    const [saving, setSaving] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+    const [form, setForm] = useState<SurveyData>({
+        age: "", gender: "", heightCm: "", weightKg: "",
+        healthIssues: "", medications: "", allergies: "",
     });
-    return () => unsub();
-  }, [router]);
 
-  const set = (field: keyof SurveyData, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }));
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, async (u) => {
+            if (!u) { router.push("/login"); return; }
+            setUser(u);
+            setAuthReady(true);
+            // Check if profile already exists
+            const snap = await getDoc(doc(db, "profiles", u.uid));
+            if (snap.exists()) {
+                const data = snap.data() as SurveyData;
+                setForm(data);
+                setIsEdit(true);
+            }
+        });
+        return () => unsub();
+    }, [router]);
 
-  const handleSubmit = async () => {
-    if (!user) return;
-    setSaving(true);
-    await setDoc(doc(db, "profiles", user.uid), {
-      ...form,
-      updatedAt: new Date().toISOString(),
-    });
-    setSaving(false);
-    router.push("/chat");
-  };
+    const set = (field: keyof SurveyData, value: string) =>
+        setForm((prev) => ({ ...prev, [field]: value }));
 
-  if (!authReady) {
+    const handleSubmit = async () => {
+        if (!user) return;
+        setSaving(true);
+        await setDoc(doc(db, "profiles", user.uid), {
+            ...form,
+            updatedAt: new Date().toISOString(),
+        });
+        setSaving(false);
+        router.push("/chat");
+    };
+
+    if (!authReady) {
+        return (
+            <div style={{ minHeight: "100vh", background: "#06060e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 40, height: 40, border: "2px solid rgba(124,58,237,0.3)", borderTop: "2px solid #7c3aed", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            </div>
+        );
+    }
+
     return (
-      <div style={{ minHeight: "100vh", background: "#06060e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: 40, height: 40, border: "2px solid rgba(124,58,237,0.3)", borderTop: "2px solid #7c3aed", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <style>{`
+        <>
+            <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #06060e; font-family: 'Sora', sans-serif; color: rgba(255,255,255,0.88); }
@@ -241,121 +241,121 @@ export default function SurveyPage() {
         }
       `}</style>
 
-      <div className="sv-root">
-        <div className="sv-blob sv-blob-1" />
-        <div className="sv-blob sv-blob-2" />
+            <div className="sv-root">
+                <div className="sv-blob sv-blob-1" />
+                <div className="sv-blob sv-blob-2" />
 
-        <div className="sv-card">
-          {/* Logo */}
-          <div className="sv-logo">
-            <div className="sv-logo-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2z"/>
-              </svg>
+                <div className="sv-card">
+                    {/* Logo */}
+                    <div className="sv-logo">
+                        <div className="sv-logo-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h5v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2z" />
+                            </svg>
+                        </div>
+                        CureMe AI
+                    </div>
+
+                    {/* Progress */}
+                    <div className="sv-progress">
+                        {STEPS.map((s, i) => (
+                            <Fragment key={s}>
+                                <div className={`sv-step ${i === step ? "active" : i < step ? "done" : ""}`}>
+                                    <div className="sv-step-num">{i < step ? "✓" : i + 1}</div>
+                                    {s}
+                                </div>
+                                {i < STEPS.length - 1 && <div className="sv-step-divider" />}
+                            </Fragment>
+                        ))}
+                    </div>
+
+                    {/* ── STEP 0: Personal ── */}
+                    {step === 0 && (
+                        <>
+                            <h2 className="sv-title">{isEdit ? "Update your profile" : "Tell us about yourself"}</h2>
+                            <p className="sv-sub">This helps us personalise your health guidance.</p>
+
+                            <div className="sv-field">
+                                <label className="sv-label">Age</label>
+                                <input className="sv-input" type="number" placeholder="e.g. 28" value={form.age} onChange={(e) => set("age", e.target.value)} />
+                            </div>
+
+                            <div className="sv-field">
+                                <label className="sv-label">Gender</label>
+                                <div className="sv-gender-row">
+                                    {["Male", "Female", "Other"].map((g) => (
+                                        <button key={g} className={`sv-gender-pill ${form.gender === g ? "selected" : ""}`} onClick={() => set("gender", g)}>{g}</button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="sv-actions">
+                                <button className="sv-btn-primary" onClick={() => setStep(1)}>Continue →</button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── STEP 1: Body ── */}
+                    {step === 1 && (
+                        <>
+                            <h2 className="sv-title">Your body metrics</h2>
+                            <p className="sv-sub">Used to calculate BMI and tailor dietary advice.</p>
+
+                            <div className="sv-row">
+                                <div className="sv-field">
+                                    <label className="sv-label">Height (cm)</label>
+                                    <input className="sv-input" type="number" placeholder="e.g. 170" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
+                                </div>
+                                <div className="sv-field">
+                                    <label className="sv-label">Weight (kg)</label>
+                                    <input className="sv-input" type="number" placeholder="e.g. 65" value={form.weightKg} onChange={(e) => set("weightKg", e.target.value)} />
+                                </div>
+                            </div>
+
+                            <div className="sv-actions">
+                                <button className="sv-btn-ghost" onClick={() => setStep(0)}>← Back</button>
+                                <button className="sv-btn-primary" onClick={() => setStep(2)}>Continue →</button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* ── STEP 2: Health ── */}
+                    {step === 2 && (
+                        <>
+                            <h2 className="sv-title">Your health profile</h2>
+                            <p className="sv-sub">Be as specific or brief as you like. You can update this anytime.</p>
+
+                            <div className="sv-field">
+                                <label className="sv-label">Prevailing Health Issues</label>
+                                <textarea className="sv-textarea" placeholder="e.g. Type 2 Diabetes, PCOS, Hypertension..." value={form.healthIssues} onChange={(e) => set("healthIssues", e.target.value)} />
+                            </div>
+
+                            <div className="sv-field">
+                                <label className="sv-label">Current Medications</label>
+                                <textarea className="sv-textarea" placeholder="e.g. Metformin 500mg, Lisinopril..." value={form.medications} onChange={(e) => set("medications", e.target.value)} />
+                            </div>
+
+                            <div className="sv-field">
+                                <label className="sv-label">Allergies</label>
+                                <input className="sv-input" type="text" placeholder="e.g. Penicillin, Peanuts, Latex..." value={form.allergies} onChange={(e) => set("allergies", e.target.value)} />
+                            </div>
+
+                            <div className="sv-actions">
+                                <button className="sv-btn-ghost" onClick={() => setStep(1)}>← Back</button>
+                                <button className="sv-btn-primary" disabled={saving} onClick={handleSubmit}>
+                                    {saving ? "Saving..." : isEdit ? "Save Changes ✓" : "Complete Setup →"}
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {!isEdit && (
+                        <p className="sv-skip">
+                            <a onClick={() => router.push("/chat")}>Skip for now</a> — you can fill this in later from settings
+                        </p>
+                    )}
+                </div>
             </div>
-            CureMe AI
-          </div>
-
-          {/* Progress */}
-          <div className="sv-progress">
-  {STEPS.map((s, i) => (
-    <Fragment key={s}>
-      <div className={`sv-step ${i === step ? "active" : i < step ? "done" : ""}`}>
-        <div className="sv-step-num">{i < step ? "✓" : i + 1}</div>
-        {s}
-      </div>
-      {i < STEPS.length - 1 && <div className="sv-step-divider" />}
-    </Fragment>
-  ))}
-</div>
-
-          {/* ── STEP 0: Personal ── */}
-          {step === 0 && (
-            <>
-              <h2 className="sv-title">{isEdit ? "Update your profile" : "Tell us about yourself"}</h2>
-              <p className="sv-sub">This helps us personalise your health guidance.</p>
-
-              <div className="sv-field">
-                <label className="sv-label">Age</label>
-                <input className="sv-input" type="number" placeholder="e.g. 28" value={form.age} onChange={(e) => set("age", e.target.value)} />
-              </div>
-
-              <div className="sv-field">
-                <label className="sv-label">Gender</label>
-                <div className="sv-gender-row">
-                  {["Male", "Female", "Other"].map((g) => (
-                    <button key={g} className={`sv-gender-pill ${form.gender === g ? "selected" : ""}`} onClick={() => set("gender", g)}>{g}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="sv-actions">
-                <button className="sv-btn-primary" onClick={() => setStep(1)}>Continue →</button>
-              </div>
-            </>
-          )}
-
-          {/* ── STEP 1: Body ── */}
-          {step === 1 && (
-            <>
-              <h2 className="sv-title">Your body metrics</h2>
-              <p className="sv-sub">Used to calculate BMI and tailor dietary advice.</p>
-
-              <div className="sv-row">
-                <div className="sv-field">
-                  <label className="sv-label">Height (cm)</label>
-                  <input className="sv-input" type="number" placeholder="e.g. 170" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
-                </div>
-                <div className="sv-field">
-                  <label className="sv-label">Weight (kg)</label>
-                  <input className="sv-input" type="number" placeholder="e.g. 65" value={form.weightKg} onChange={(e) => set("weightKg", e.target.value)} />
-                </div>
-              </div>
-
-              <div className="sv-actions">
-                <button className="sv-btn-ghost" onClick={() => setStep(0)}>← Back</button>
-                <button className="sv-btn-primary" onClick={() => setStep(2)}>Continue →</button>
-              </div>
-            </>
-          )}
-
-          {/* ── STEP 2: Health ── */}
-          {step === 2 && (
-            <>
-              <h2 className="sv-title">Your health profile</h2>
-              <p className="sv-sub">Be as specific or brief as you like. You can update this anytime.</p>
-
-              <div className="sv-field">
-                <label className="sv-label">Prevailing Health Issues</label>
-                <textarea className="sv-textarea" placeholder="e.g. Type 2 Diabetes, PCOS, Hypertension..." value={form.healthIssues} onChange={(e) => set("healthIssues", e.target.value)} />
-              </div>
-
-              <div className="sv-field">
-                <label className="sv-label">Current Medications</label>
-                <textarea className="sv-textarea" placeholder="e.g. Metformin 500mg, Lisinopril..." value={form.medications} onChange={(e) => set("medications", e.target.value)} />
-              </div>
-
-              <div className="sv-field">
-                <label className="sv-label">Allergies</label>
-                <input className="sv-input" type="text" placeholder="e.g. Penicillin, Peanuts, Latex..." value={form.allergies} onChange={(e) => set("allergies", e.target.value)} />
-              </div>
-
-              <div className="sv-actions">
-                <button className="sv-btn-ghost" onClick={() => setStep(1)}>← Back</button>
-                <button className="sv-btn-primary" disabled={saving} onClick={handleSubmit}>
-                  {saving ? "Saving..." : isEdit ? "Save Changes ✓" : "Complete Setup →"}
-                </button>
-              </div>
-            </>
-          )}
-
-          {!isEdit && (
-            <p className="sv-skip">
-              <a onClick={() => router.push("/chat")}>Skip for now</a> — you can fill this in later from settings
-            </p>
-          )}
-        </div>
-      </div>
-    </>
-  );
+        </>
+    );
 }

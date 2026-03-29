@@ -5,10 +5,10 @@ import { askAI } from "@/lib/gemini";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 import { deleteDoc, getDocs } from "firebase/firestore";
-import { 
+import {
   getFirestore, doc, getDoc,
-  collection, addDoc, query, 
-  orderBy, onSnapshot, serverTimestamp 
+  collection, addDoc, query,
+  orderBy, onSnapshot, serverTimestamp
 } from "firebase/firestore";
 import { Circle, Droplets, Flower2, Heart, Scale } from "lucide-react";
 
@@ -90,25 +90,25 @@ export default function ChatBotPremium() {
   }, [messages, loading]);
 
   useEffect(() => {
-  if (!user) return;
+    if (!user) return;
 
-  // Real-time listener — loads history and stays in sync
-  const q = query(
-    collection(db, "chats", user.uid, "messages"),
-    orderBy("timestamp", "asc")
-  );
+    // Real-time listener — loads history and stays in sync
+    const q = query(
+      collection(db, "chats", user.uid, "messages"),
+      orderBy("timestamp", "asc")
+    );
 
-  const unsub = onSnapshot(q, (snapshot) => {
-    const loaded: Message[] = snapshot.docs.map((doc) => ({
-      role: doc.data().role,
-      content: doc.data().content,
-    }));
-    setMessages(loaded);
-    setHistoryLoaded(true);
-  });
+    const unsub = onSnapshot(q, (snapshot) => {
+      const loaded: Message[] = snapshot.docs.map((doc) => ({
+        role: doc.data().role,
+        content: doc.data().content,
+      }));
+      setMessages(loaded);
+      setHistoryLoaded(true);
+    });
 
-  return () => unsub();
-}, [user]);
+    return () => unsub();
+  }, [user]);
 
   const getInitials = (u: User) => {
     if (u.displayName) {
@@ -123,67 +123,84 @@ export default function ChatBotPremium() {
     window.location.href = "/";
   };
   const handleClearChat = async () => {
-  if (!user) return;
-  const q = query(collection(db, "chats", user.uid, "messages"));
-  const snapshot = await getDocs(q);
-  await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
-  setMessages([]);
-};
+    if (!user) return;
+    const q = query(collection(db, "chats", user.uid, "messages"));
+    const snapshot = await getDocs(q);
+    await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
+    setMessages([]);
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
-   const userMessage: Message = { role: "user", content: input };
-setMessages((prev) => [...prev, userMessage]);
+    const userMessage: Message = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMessage]);
 
-// Save user message to Firestore
-if (user) {
-  await addDoc(collection(db, "chats", user.uid, "messages"), {
-    role: "user",
-    content: input,
-    timestamp: serverTimestamp(),
-  });
-}
+    // Save user message to Firestore
+    if (user) {
+      await addDoc(collection(db, "chats", user.uid, "messages"), {
+        role: "user",
+        content: input,
+        timestamp: serverTimestamp(),
+      });
+    }
     setInput("");
     setLoading(true);
+    const prompt = `You are CureMe, an expert AI health companion with the warmth of a trusted family doctor and the precision of a specialist. You have years of experience helping patients with chronic conditions live better lives.
 
-    const prompt = `You are CureMe, a warm and knowledgeable AI health assistant.
+PERSONALITY:
+- Warm and empathetic — you genuinely care about this person
+- Direct and confident — you don't hedge everything with "maybe" or "possibly"
+- Slightly personal — use the user's profile data naturally in conversation, not robotically
+- Encouraging — always end on a positive, actionable note
+- Never preachy — give advice once, don't repeat warnings multiple times
 
-${profile ? `User profile:
-- Age: ${profile.age || "not specified"}
-- Gender: ${profile.gender || "not specified"}
-- Height: ${profile.heightCm ? profile.heightCm + "cm" : "not specified"}
-- Weight: ${profile.weightKg ? profile.weightKg + "kg" : "not specified"}
-- BMI: ${profile.heightCm && profile.weightKg ? (parseFloat(profile.weightKg) / Math.pow(parseFloat(profile.heightCm) / 100, 2)).toFixed(1) : "not calculated"}
-- Health issues: ${profile.healthIssues || "none mentioned"}
-- Medications: ${profile.medications || "none mentioned"}
-- Allergies: ${profile.allergies || "none mentioned"}` : ""}
+USER PROFILE:
+- Name: ${user?.displayName || "there"}
+- Age: ${profile?.age || "not specified"}
+- Gender: ${profile?.gender || "not specified"}
+- Height: ${profile?.heightCm ? profile.heightCm + "cm" : "not specified"}
+- Weight: ${profile?.weightKg ? profile.weightKg + "kg" : "not specified"}
+- BMI: ${profile?.heightCm && profile?.weightKg ? (parseFloat(profile.weightKg) / Math.pow(parseFloat(profile.heightCm) / 100, 2)).toFixed(1) : "not calculated"}
+- Health conditions: ${profile?.healthIssues || "none mentioned"}
+- Current medications: ${profile?.medications || "none mentioned"}
+- Allergies: ${profile?.allergies || "none mentioned"}
+- Selected condition today: ${disease || "General Health"}
 
-${disease ? `Selected condition: ${disease}.` : ""}
+STRICT RULES:
+- NEVER suggest anything containing: ${profile?.allergies || "nothing"}
+- ALWAYS consider medication interactions with: ${profile?.medications || "none"}
+- If BMI > 25, naturally weave in portion awareness without being preachy
+- If user is on medication, acknowledge it naturally — not as a warning label
+- Max 130 words — be concise, not exhaustive
+- Use **bold** for section headers
+- Use - for bullet points
+- End with one specific, actionable tip — not just "consult your doctor"
+- The LAST line must always be: *Always consult your doctor for personalised advice.*
+
+TONE EXAMPLES:
+❌ "Based on your profile data, it is recommended that you..."
+✅ "Given your hypertension, here's what actually works..."
+
+❌ "You should avoid foods that may possibly cause issues."
+✅ "Skip the salty sauces — your blood pressure will thank you."
+
+❌ "Please note that your medication may interact with..."
+✅ "Since you're on Amlodipine, stay away from grapefruit — it's a known interaction."
+
 User asks: "${input}"
 
-Reply rules:
-- Use **bold** for section headers
-- Use - bullet points for lists
-- Only include sections relevant to the question
-- Reference the user's profile data where relevant (age, weight, conditions, medications)
-- If they have allergies, never suggest those in dietary advice
-- If they are on medications, consider interactions
-- Max 120 words
-- Tone: clear, caring, non-alarming
-- End with: *Always consult your doctor for personalized advice.*
-
-Respond now:`;
+Respond now as CureMe:`;
 
     try {
       const aiResponse = await askAI(prompt);
       setMessages((prev) => [...prev, { role: "assistant", content: aiResponse }]);
       if (user) {
-  await addDoc(collection(db, "chats", user.uid, "messages"), {
-    role: "assistant",
-    content: aiResponse,
-    timestamp: serverTimestamp(),
-  });
-}
+        await addDoc(collection(db, "chats", user.uid, "messages"), {
+          role: "assistant",
+          content: aiResponse,
+          timestamp: serverTimestamp(),
+        });
+      }
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, something went wrong. ❌" }]);
     }
@@ -440,12 +457,15 @@ Respond now:`;
                   <div className="dropdown-name">{user.displayName || "User"}</div>
                   <div className="dropdown-email">{user.email}</div>
                 </div>
+                <a href="/dashboard" className="dropdown-item">
+                  <span>📊</span> Dashboard
+                </a>
                 <a href="/survey" className="dropdown-item">
                   <span>👤</span> Edit Profile
                 </a>
                 <button className="dropdown-item" onClick={handleClearChat}>
-  <span>🗑</span> Clear Chat
-</button>
+                  <span>🗑</span> Clear Chat
+                </button>
                 <button className="dropdown-item danger" onClick={handleSignOut}>
                   <span>↩</span> Sign Out
                 </button>

@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Droplets, Flower2, Heart, Scale, Sparkles, Brain, MessageCircle, Shield, Zap, Stethoscope,Search } from "lucide-react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
-import { Droplets, Flower2, Heart, Scale, Sparkles, Brain, MessageCircle, Shield, Zap, Stethoscope,Search } from "lucide-react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",

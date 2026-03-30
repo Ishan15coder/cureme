@@ -432,7 +432,7 @@ export default function DashboardPage() {
         <ul className="nav-links">
           <li><a href="/dashboard" className="active">Dashboard</a></li>
           <li><a href="/symptoms">Symptoms</a></li>
-          <li><a href="/chat">Chat</a></li>6
+          <li><a href="/chat">Chat</a></li>
           <li><a href="/survey">Edit Profile</a></li>
         </ul>
         {user ? (

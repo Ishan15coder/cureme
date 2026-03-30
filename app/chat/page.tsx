@@ -57,15 +57,15 @@ export default function ChatBotPremium() {
   const [profile, setProfile] = useState<any>(null);
   const [disease, setDisease] = useState<string>("");
   const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "hi", label: "हिंदी" },
-  { code: "ta", label: "தமிழ்" },
-  { code: "bn", label: "বাংলা" },
-  { code: "te", label: "తెలుగు" },
-  { code: "mr", label: "मराठी" },
-];
+    { code: "en", label: "English" },
+    { code: "hi", label: "हिंदी" },
+    { code: "ta", label: "தமிழ்" },
+    { code: "bn", label: "বাংলা" },
+    { code: "te", label: "తెలుగు" },
+    { code: "mr", label: "मराठी" },
+  ];
 
-const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState("en");
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [historyLoaded, setHistoryLoaded] = useState(false);
@@ -224,7 +224,7 @@ Respond now as CureMe in ${LANGUAGES.find(l => l.code === language)?.label || "E
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sora', sans-serif; }
 
         .cure-root {
           min-height: 100vh;
@@ -408,6 +408,7 @@ Respond now as CureMe in ${LANGUAGES.find(l => l.code === language)?.label || "E
         .dropdown-name { font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dropdown-email { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Sora', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+.dropdown-item span { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
         .dropdown-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
         .dropdown-item.danger:hover { background: rgba(232,121,160,0.1); color: #f9a8d4; }
 
@@ -436,9 +437,9 @@ Respond now as CureMe in ${LANGUAGES.find(l => l.code === language)?.label || "E
         </a>
 
         <ul className="chat-nav-links">
-          <li><a href="/#features">Features</a></li>
-          <li><a href="/#conditions">Conditions</a></li>
-          <li><a href="/#how">How it works</a></li>
+          <li><a href="/">Home</a></li>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/symptoms">Symptoms</a></li>
         </ul>
 
         {/* FIX 4: the nav auth JSX had mismatched braces — dropdown closing tag
@@ -470,12 +471,6 @@ Respond now as CureMe in ${LANGUAGES.find(l => l.code === language)?.label || "E
                 <a href="/survey" className="dropdown-item">
                   <span>👤</span> Edit Profile
                 </a>
-                <a href="/dashboard" className="dropdown-item">
-                  <span>📊</span> Dashboard
-                </a>
-                <a href="/symptoms" className="dropdown-item">
-  <span>🔍</span> Symptom Checker
-</a>
                 <button className="dropdown-item" onClick={handleClearChat}>
                   <span>🗑</span> Clear Chat
                 </button>
@@ -573,28 +568,28 @@ Respond now as CureMe in ${LANGUAGES.find(l => l.code === language)?.label || "E
 
               <div className="cure-input-wrap">
                 <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-  <select
-    value={language}
-    onChange={(e) => setLanguage(e.target.value)}
-    style={{
-      background: "rgba(255,255,255,0.06)",
-      border: "1px solid rgba(255,255,255,0.1)",
-      borderRadius: 8,
-      color: "rgba(255,255,255,0.7)",
-      fontSize: "0.72rem",
-      padding: "4px 10px",
-      fontFamily: "Sora, sans-serif",
-      cursor: "pointer",
-      outline: "none",
-    }}
-  >
-    {LANGUAGES.map((l) => (
-      <option key={l.code} value={l.code} style={{ background: "#13121f" }}>
-        {l.label}
-      </option>
-    ))}
-  </select>
-</div>
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: 8,
+                      color: "rgba(255,255,255,0.7)",
+                      fontSize: "0.72rem",
+                      padding: "4px 10px",
+                      fontFamily: "Sora, sans-serif",
+                      cursor: "pointer",
+                      outline: "none",
+                    }}
+                  >
+                    {LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.code} style={{ background: "#13121f" }}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="cure-input-row">
                   <input
                     className="cure-input"

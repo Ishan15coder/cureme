@@ -5,6 +5,7 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { askAI } from "@/lib/gemini";
+
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
   authDomain: "cureme-ed6d7.firebaseapp.com",
@@ -267,6 +268,10 @@ setResult(parseResult(raw));
   return (
     <>
       <title>CureMe AI — Symptom Checker</title>
+        <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -285,7 +290,7 @@ setResult(parseResult(raw));
         .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: #fff; text-decoration: none; }
         .nav-logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, #7c3aed, #2563eb); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 14px rgba(124,58,237,0.4); }
         .nav-links { display: flex; align-items: center; gap: 24px; list-style: none; }
-        .nav-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.8rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.04em; font-family: 'Sora', sans-serif; transition: color 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: #fff; }
 
         .user-menu { position: relative; }

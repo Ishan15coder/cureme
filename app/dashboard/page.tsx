@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-
+import { MessageCircle, User as UserIcon, LogOut, LayoutDashboard, Stethoscope } from "lucide-react";
+import { Activity, Pill, AlertTriangle } from "lucide-react";
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
   authDomain: "cureme-ed6d7.firebaseapp.com",
@@ -431,6 +432,7 @@ export default function DashboardPage() {
         <ul className="nav-links">
           <li><a href="/dashboard" className="active">Dashboard</a></li>
           <li><a href="/chat">Chat</a></li>
+          <li><a href="/symptoms">Symptoms</a></li>
           <li><a href="/survey">Edit Profile</a></li>
         </ul>
         {user ? (
@@ -452,9 +454,15 @@ export default function DashboardPage() {
                   <div className="dropdown-name">{user.displayName || "User"}</div>
                   <div className="dropdown-email">{user.email}</div>
                 </div>
-                <a href="/chat" className="dropdown-item"><span>💬</span> Open Chat</a>
-                <a href="/survey" className="dropdown-item"><span>👤</span> Edit Profile</a>
-                <button className="dropdown-item danger" onClick={handleSignOut}><span>↩</span> Sign Out</button>
+                <a href="/chat" className="dropdown-item">
+  <MessageCircle size={14} strokeWidth={1.5} /> Open Chat
+</a>
+<a href="/survey" className="dropdown-item">
+  <UserIcon size={14} strokeWidth={1.5} /> Edit Profile
+</a>
+<button className="dropdown-item danger" onClick={handleSignOut}>
+  <LogOut size={14} strokeWidth={1.5} /> Sign Out
+</button>
               </div>
             )}
           </div>
@@ -549,9 +557,9 @@ export default function DashboardPage() {
               <div className="dash-card-label">Active Conditions</div>
               {issues.length > 0 ? (
                 <div className="tag-list">
-                  {issues.map((issue, i) => (
-                    <span key={i} className="tag tag-red">⚕ {issue}</span>
-                  ))}
+                 {issues.map((issue, i) => (
+  <span key={i} className="tag tag-red">{issue}</span>
+))}
                 </div>
               ) : (
                 <span className="tag-empty">No conditions listed</span>
@@ -560,9 +568,9 @@ export default function DashboardPage() {
               <div className="dash-card-label" style={{ marginTop: 20 }}>Current Medications</div>
               {meds.length > 0 ? (
                 <div className="tag-list">
-                  {meds.map((med, i) => (
-                    <span key={i} className="tag tag-purple">💊 {med}</span>
-                  ))}
+                 {meds.map((med, i) => (
+  <span key={i} className="tag tag-purple">{med}</span>
+))}
                 </div>
               ) : (
                 <span className="tag-empty">No medications listed</span>
@@ -574,9 +582,9 @@ export default function DashboardPage() {
               <div className="dash-card-label">Allergies</div>
               {allergies.length > 0 ? (
                 <div className="tag-list">
-                  {allergies.map((a, i) => (
-                    <span key={i} className="tag tag-blue">⚠ {a}</span>
-                  ))}
+                 {allergies.map((a, i) => (
+  <span key={i} className="tag tag-blue">{a}</span>
+))}
                 </div>
               ) : (
                 <span className="tag-empty">No allergies listed</span>
@@ -584,8 +592,12 @@ export default function DashboardPage() {
 
               <div className="dash-card-label" style={{ marginTop: 20 }}>Quick Actions</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <a href="/chat" className="edit-btn" style={{ marginTop: 0 }}>💬 Ask CureMe</a>
-                <a href="/survey" className="edit-btn" style={{ marginTop: 0 }}>✏️ Edit Profile</a>
+                <a href="/chat" className="edit-btn" style={{ marginTop: 0 }}>
+  <MessageCircle size={14} strokeWidth={1.5} /> Ask CureMe
+</a>
+<a href="/survey" className="edit-btn" style={{ marginTop: 0 }}>
+  <UserIcon size={14} strokeWidth={1.5} /> Edit Profile
+</a>
               </div>
             </div>
 

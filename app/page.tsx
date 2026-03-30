@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
-import { Droplets, Flower2, Heart, Scale, Sparkles } from "lucide-react";
+import { Droplets, Flower2, Heart, Scale, Sparkles, Brain, MessageCircle, Shield, Zap, Stethoscope,Search } from "lucide-react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
@@ -409,7 +409,6 @@ export default function LandingPage() {
         {/* Desktop nav */}
         <ul className="nav-links">
           <li><a href="#features">Features</a></li>
-          <li><a href="#conditions">Conditions</a></li>
           <li><a href="#how">How it works</a></li>
           <li><a href="/dashboard">Dashboard</a></li>
            <li><a href="/symptoms">Symptoms</a></li>
@@ -424,24 +423,18 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section className="hero">
-        {authReady && user && (
-          <div className="hero-user-pill">
-            <span className="hero-user-dot" />
-            Signed in as {user.displayName || user.email}
-          </div>
-        )}
-        <div className="hero-badge">
-          <span className="hero-badge-dot" />
-          AI Health Companion · Powered by Cohere
-        </div>
+        
+        
         <h1 className="hero-title">Your health,<br /><em>understood.</em></h1>
         <p className="hero-sub">
           Your personal AI health companion that knows your conditions, medications, and allergies — and gives advice that's actually tailored to you.
         </p>
           <div className="hero-actions">
     <a href="./chat" className="btn-primary">Start Chatting →</a>
-    <a href="/symptoms" className="btn-symptom">Check Symptoms 🔍</a>
-    <a href="#features" className="btn-ghost">Learn more</a>
+    <a href="/symptoms" className="btn-symptom">
+  <Search size={16} strokeWidth={1.5} /> Check Symptoms
+</a>
+    
   </div>
         <div className="hero-visual">
           <div className="hero-visual-bar">
@@ -449,10 +442,24 @@ export default function LandingPage() {
             <span className="hv-label">CureMe AI — Health Chat</span>
           </div>
           <div className="hero-visual-chat">
-            <div className="hv-msg user"><div className="hv-avatar user">👤</div><div className="hv-bubble user">What foods should I avoid with diabetes?</div></div>
-            <div className="hv-msg"><div className="hv-avatar ai">✦</div><div className="hv-bubble ai"><strong>Foods to limit with Diabetes:</strong><br />Avoid refined carbs like white bread and sugary drinks. Focus on whole grains, lean proteins, and fibre-rich vegetables. <em>Always consult your doctor for personalized advice.</em></div></div>
-            <div className="hv-msg user"><div className="hv-avatar user">👤</div><div className="hv-bubble user">Any morning routine tips?</div></div>
-            <div className="hv-msg"><div className="hv-avatar ai">✦</div><div className="hv-bubble ai">Start with a 10-min walk, check blood sugar, eat a balanced breakfast with protein. Hydrate well. <em>Always consult your doctor for personalized advice.</em></div></div>
+            <div className="hv-msg user"><div className="hv-avatar user">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+</div><div className="hv-bubble user">What foods should I avoid with diabetes?</div></div>
+            <div className="hv-msg"><div className="hv-avatar ai">
+  <Stethoscope size={13} strokeWidth={1.5} color="#fff" />
+</div><div className="hv-bubble ai"><strong>Foods to limit with Diabetes:</strong><br />Avoid refined carbs like white bread and sugary drinks. Focus on whole grains, lean proteins, and fibre-rich vegetables. <em>Always consult your doctor for personalized advice.</em></div></div>
+            <div className="hv-msg user"><div className="hv-avatar user">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+    <circle cx="12" cy="7" r="4"/>
+  </svg>
+</div><div className="hv-bubble user">Any morning routine tips?</div></div>
+            <div className="hv-msg"><div className="hv-avatar ai">
+  <Stethoscope size={13} strokeWidth={1.5} color="#fff" />
+</div><div className="hv-bubble ai">Start with a 10-min walk, check blood sugar, eat a balanced breakfast with protein. Hydrate well. <em>Always consult your doctor for personalized advice.</em></div></div>
           </div>
         </div>
       </section>
@@ -462,26 +469,26 @@ export default function LandingPage() {
         <p className="section-label reveal">What we offer</p>
         <h2 className="section-title reveal">Built around <em style={{ fontStyle: 'italic', color: '#a78bfa' }}>you</em>, not just your condition</h2>
         <div className="features-grid">
-          <div className="feature-card reveal">
-            <div className="feature-icon violet">🧬</div>
-            <h3 className="feature-title">Knows Your Full Profile</h3>
-            <p className="feature-desc">Age, BMI, medications, allergies — every response is built around your unique health picture, not a generic condition.</p>
-          </div>
-          <div className="feature-card reveal">
-            <div className="feature-icon cyan">💊</div>
-            <h3 className="feature-title">Medication-Aware</h3>
-            <p className="feature-desc">CureMe understands your current medications and never suggests anything that could cause an interaction or conflict.</p>
-          </div>
-          <div className="feature-card reveal">
-            <div className="feature-icon rose">🛡️</div>
-            <h3 className="feature-title">Allergy Safe</h3>
-            <p className="feature-desc">Your allergies are remembered across every conversation. Dietary advice will never include something that could harm you.</p>
-          </div>
-          <div className="feature-card reveal">
-            <div className="feature-icon green">⚡</div>
-            <h3 className="feature-title">Instant & Always Available</h3>
-            <p className="feature-desc">No waiting rooms, no appointments, no cost. Get thoughtful, personalised health guidance any time of day or night.</p>
-          </div>
+         <div className="feature-card reveal">
+  <div className="feature-icon violet"><Brain size={22} strokeWidth={1.5} color="#a78bfa" /></div>
+  <h3 className="feature-title">Knows Your Full Profile</h3>
+  <p className="feature-desc">Age, BMI, medications, allergies — every response is built around your unique health picture, not a generic condition.</p>
+</div>
+<div className="feature-card reveal">
+  <div className="feature-icon cyan"><MessageCircle size={22} strokeWidth={1.5} color="#60a5fa" /></div>
+  <h3 className="feature-title">Medication-Aware</h3>
+  <p className="feature-desc">CureMe understands your current medications and never suggests anything that could cause an interaction or conflict.</p>
+</div>
+<div className="feature-card reveal">
+  <div className="feature-icon rose"><Shield size={22} strokeWidth={1.5} color="#e879a0" /></div>
+  <h3 className="feature-title">Allergy Safe</h3>
+  <p className="feature-desc">Your allergies are remembered across every conversation. Dietary advice will never include something that could harm you.</p>
+</div>
+<div className="feature-card reveal">
+  <div className="feature-icon green"><Zap size={22} strokeWidth={1.5} color="#4ade80" /></div>
+  <h3 className="feature-title">Instant & Always Available</h3>
+  <p className="feature-desc">No waiting rooms, no appointments, no cost. Get thoughtful, personalised health guidance any time of day or night.</p>
+</div>
         </div>
       </section>
 

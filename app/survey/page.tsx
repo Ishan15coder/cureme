@@ -6,6 +6,7 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
@@ -93,6 +94,9 @@ export default function SurveyPage() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Focus styles for keyboard navigation */
+        *:focus-visible { outline: 2px solid rgba(124,58,237,0.8); outline-offset: 2px; }
+
         .sv-root {
           min-height: 100vh;
           display: flex; align-items: center; justify-content: center;
@@ -167,9 +171,10 @@ export default function SurveyPage() {
         .sv-label {
           display: block; font-size: 0.7rem; font-weight: 600;
           letter-spacing: 0.08em; text-transform: uppercase;
-          color: rgba(255,255,255,0.4); margin-bottom: 8px;
+          color: rgba(255,255,255,0.4); margin-bottom: 8px; cursor: pointer;
         }
         .sv-input, .sv-select, .sv-textarea {
+          min-height: 44px;
           width: 100%; padding: 11px 14px;
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.1);
@@ -191,6 +196,7 @@ export default function SurveyPage() {
         /* GENDER PILLS */
         .sv-gender-row { display: flex; gap: 10px; }
         .sv-gender-pill {
+          min-height: 44px;
           flex: 1; padding: 10px; text-align: center;
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.1);
@@ -207,6 +213,7 @@ export default function SurveyPage() {
         /* BUTTONS */
         .sv-actions { display: flex; gap: 12px; margin-top: 28px; }
         .sv-btn-primary {
+          min-height: 44px;
           flex: 1; padding: 13px;
           background: linear-gradient(135deg, #7c3aed, #4f46e5);
           border: none; border-radius: 14px;
@@ -218,6 +225,7 @@ export default function SurveyPage() {
         .sv-btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(124,58,237,0.55); }
         .sv-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .sv-btn-ghost {
+          min-height: 44px;
           padding: 13px 20px;
           background: transparent;
           border: 1px solid rgba(255,255,255,0.1);
@@ -242,8 +250,8 @@ export default function SurveyPage() {
       `}</style>
 
             <div className="sv-root">
-                <div className="sv-blob sv-blob-1" />
-                <div className="sv-blob sv-blob-2" />
+                <div className="sv-blob sv-blob-1" aria-hidden="true" />
+                <div className="sv-blob sv-blob-2" aria-hidden="true" />
 
                 <div className="sv-card">
                     {/* Logo */}
@@ -261,7 +269,7 @@ export default function SurveyPage() {
                         {STEPS.map((s, i) => (
                             <Fragment key={s}>
                                 <div className={`sv-step ${i === step ? "active" : i < step ? "done" : ""}`}>
-                                    <div className="sv-step-num">{i < step ? "✓" : i + 1}</div>
+                                    <div className="sv-step-num">{i < step ? <Check size={12} strokeWidth={3} /> : i + 1}</div>
                                     {s}
                                 </div>
                                 {i < STEPS.length - 1 && <div className="sv-step-divider" />}
@@ -276,8 +284,8 @@ export default function SurveyPage() {
                             <p className="sv-sub">This helps us personalise your health guidance.</p>
 
                             <div className="sv-field">
-                                <label className="sv-label">Age</label>
-                                <input className="sv-input" type="number" placeholder="e.g. 28" value={form.age} onChange={(e) => set("age", e.target.value)} />
+                                <label className="sv-label" htmlFor="age-input">Age</label>
+                                <input id="age-input" className="sv-input" type="number" placeholder="e.g. 28" value={form.age} onChange={(e) => set("age", e.target.value)} />
                             </div>
 
                             <div className="sv-field">
@@ -303,12 +311,12 @@ export default function SurveyPage() {
 
                             <div className="sv-row">
                                 <div className="sv-field">
-                                    <label className="sv-label">Height (cm)</label>
-                                    <input className="sv-input" type="number" placeholder="e.g. 170" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
+                                    <label className="sv-label" htmlFor="height-input">Height (cm)</label>
+                                    <input id="height-input" className="sv-input" type="number" placeholder="e.g. 170" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
                                 </div>
                                 <div className="sv-field">
-                                    <label className="sv-label">Weight (kg)</label>
-                                    <input className="sv-input" type="number" placeholder="e.g. 65" value={form.weightKg} onChange={(e) => set("weightKg", e.target.value)} />
+                                    <label className="sv-label" htmlFor="weight-input">Weight (kg)</label>
+                                    <input id="weight-input" className="sv-input" type="number" placeholder="e.g. 65" value={form.weightKg} onChange={(e) => set("weightKg", e.target.value)} />
                                 </div>
                             </div>
 
@@ -326,24 +334,24 @@ export default function SurveyPage() {
                             <p className="sv-sub">Be as specific or brief as you like. You can update this anytime.</p>
 
                             <div className="sv-field">
-                                <label className="sv-label">Prevailing Health Issues</label>
-                                <textarea className="sv-textarea" placeholder="e.g. Type 2 Diabetes, PCOS, Hypertension..." value={form.healthIssues} onChange={(e) => set("healthIssues", e.target.value)} />
+                                <label className="sv-label" htmlFor="health-issues">Prevailing Health Issues</label>
+                                <textarea id="health-issues" className="sv-textarea" placeholder="e.g. Type 2 Diabetes, PCOS, Hypertension..." value={form.healthIssues} onChange={(e) => set("healthIssues", e.target.value)} />
                             </div>
 
                             <div className="sv-field">
-                                <label className="sv-label">Current Medications</label>
-                                <textarea className="sv-textarea" placeholder="e.g. Metformin 500mg, Lisinopril..." value={form.medications} onChange={(e) => set("medications", e.target.value)} />
+                                <label className="sv-label" htmlFor="medications">Current Medications</label>
+                                <textarea id="medications" className="sv-textarea" placeholder="e.g. Metformin 500mg, Lisinopril..." value={form.medications} onChange={(e) => set("medications", e.target.value)} />
                             </div>
 
                             <div className="sv-field">
-                                <label className="sv-label">Allergies</label>
-                                <input className="sv-input" type="text" placeholder="e.g. Penicillin, Peanuts, Latex..." value={form.allergies} onChange={(e) => set("allergies", e.target.value)} />
+                                <label className="sv-label" htmlFor="allergies">Allergies</label>
+                                <input id="allergies" className="sv-input" type="text" placeholder="e.g. Penicillin, Peanuts, Latex..." value={form.allergies} onChange={(e) => set("allergies", e.target.value)} />
                             </div>
 
                             <div className="sv-actions">
                                 <button className="sv-btn-ghost" onClick={() => setStep(1)}>← Back</button>
                                 <button className="sv-btn-primary" disabled={saving} onClick={handleSubmit}>
-                                    {saving ? "Saving..." : isEdit ? "Save Changes ✓" : "Complete Setup →"}
+                                    {saving ? "Saving..." : isEdit ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>Save Changes <Check size={16} strokeWidth={2.5} /></span> : "Complete Setup →"}
                                 </button>
                             </div>
                         </>
@@ -351,7 +359,7 @@ export default function SurveyPage() {
 
                     {!isEdit && (
                         <p className="sv-skip">
-                            <a onClick={() => router.push("/chat")}>Skip for now</a> — you can fill this in later from settings
+                            <a href="#" aria-label="Skip filling profile and go to chat" onClick={(e) => { e.preventDefault(); router.push("/chat"); }}>Skip for now</a> — you can fill this in later from settings
                         </p>
                     )}
                 </div>

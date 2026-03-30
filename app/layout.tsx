@@ -20,6 +20,9 @@ export const metadata = {
   },
 };
 
+import Navbar from "@/components/Navbar";
+import VoiceNavigator from "@/components/VoiceNavigator";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,9 +41,11 @@ export default function RootLayout({
         />
       </head>
      <body
-  className="min-h-full flex flex-col"
+  className="min-h-full flex flex-col pt-[70px]"
   suppressHydrationWarning
 >
+  <Navbar />
+  <VoiceNavigator />
   {children}
 </body>
     </html>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { MessageCircle, User as UserIcon, LogOut, LayoutDashboard, Stethoscope } from "lucide-react";
+import { MessageCircle, User as UserIcon, LogOut, LayoutDashboard, Stethoscope, ClipboardList, MapPin } from "lucide-react";
 import { Activity, Pill, AlertTriangle } from "lucide-react";
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
@@ -267,6 +267,22 @@ export default function DashboardPage() {
     window.location.href = "/";
   };
 
+  const handleFindClinics = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        window.open(`https://www.google.com/maps/search/clinics+hospitals+medical+stores+chemist+near+me/@${latitude},${longitude},14z`, "_blank");
+      },
+      () => {
+        alert("Unable to retrieve your location. Please check your browser permissions.");
+      }
+    );
+  };
+
   const getInitials = (u: User) => {
     if (u.displayName) {
       const parts = u.displayName.trim().split(" ");
@@ -308,6 +324,9 @@ export default function DashboardPage() {
         @keyframes float1 { to { transform: translate(80px,60px); } }
         @keyframes float2 { to { transform: translate(-60px,-80px); } }
 
+        /* Focus styles for keyboard navigation */
+        *:focus-visible { outline: 2px solid rgba(124,58,237,0.8); outline-offset: 2px; }
+
         /* NAV */
         nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(6,6,14,0.7); }
         .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: #fff; text-decoration: none; }
@@ -315,12 +334,12 @@ export default function DashboardPage() {
         .nav-links { display: flex; align-items: center; gap: 24px; list-style: none; }
         .nav-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.8rem; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover, .nav-links a.active { color: #fff; }
-        .nav-cta { padding: 8px 20px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border-radius: 10px; color: #fff !important; font-weight: 600 !important; font-size: 0.78rem !important; box-shadow: 0 4px 14px rgba(124,58,237,0.4); transition: all 0.2s !important; }
+        .nav-cta { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 8px 20px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border-radius: 10px; color: #fff !important; font-weight: 600 !important; font-size: 0.78rem !important; box-shadow: 0 4px 14px rgba(124,58,237,0.4); transition: all 0.2s !important; }
         .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.55) !important; }
 
         /* USER MENU */
         .user-menu { position: relative; }
-        .user-avatar-btn { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.8); font-size: 0.8rem; font-weight: 500; font-family: 'Sora', sans-serif; }
+        .user-avatar-btn { min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.8); font-size: 0.8rem; font-weight: 500; font-family: 'Sora', sans-serif; }
         .user-avatar-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(124,58,237,0.4); }
         .user-avatar-circle { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #2563eb); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #fff; flex-shrink: 0; }
         .user-photo { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -331,7 +350,7 @@ export default function DashboardPage() {
         .dropdown-header { padding: 10px 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 6px; }
         .dropdown-name { font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dropdown-email { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Sora', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+        .dropdown-item { min-height: 44px; display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Sora', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
         .dropdown-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
         .dropdown-item.danger:hover { background: rgba(232,121,160,0.1); color: #f9a8d4; }
 
@@ -398,7 +417,7 @@ export default function DashboardPage() {
         .score-row-val { font-size: 0.7rem; color: rgba(255,255,255,0.5); width: 28px; text-align: right; }
 
         /* EDIT PROFILE BTN */
-        .edit-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; padding: 10px 20px; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3); border-radius: 12px; color: #a78bfa; font-family: 'Sora', sans-serif; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+        .edit-btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; padding: 10px 20px; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3); border-radius: 12px; color: #a78bfa; font-family: 'Sora', sans-serif; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: all 0.2s; cursor: pointer; }
         .edit-btn:hover { background: rgba(124,58,237,0.25); border-color: rgba(124,58,237,0.5); color: #c4b5fd; transform: translateY(-1px); }
 
         /* NO PROFILE */
@@ -418,58 +437,11 @@ export default function DashboardPage() {
         }
       `}</style>
 
-      <div className="blobs">
+      <div className="blobs" aria-hidden="true">
         <div className="blob blob-1" />
         <div className="blob blob-2" />
       </div>
 
-      {/* ── NAV ── */}
-      <nav>
-        <a className="nav-logo" href="/">
-          <div className="nav-logo-icon">🩺</div>
-          CureMe AI
-        </a>
-        <ul className="nav-links">
-          <li><a href="/dashboard" className="active">Dashboard</a></li>
-          <li><a href="/symptoms">Symptoms</a></li>
-          <li><a href="/chat">Chat</a></li>
-          <li><a href="/survey">Edit Profile</a></li>
-        </ul>
-        {user ? (
-          <div className="user-menu">
-            <button className="user-avatar-btn" onClick={() => setDropdownOpen(o => !o)}>
-              {user.photoURL
-                ? <img src={user.photoURL} alt="avatar" className="user-photo" />
-                : <div className="user-avatar-circle">{getInitials(user)}</div>}
-              <span className="user-name" style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8rem" }}>
-                {user.displayName?.split(" ")[0] || user.email?.split("@")[0]}
-              </span>
-              <svg className={`user-chevron ${dropdownOpen ? "open" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            {dropdownOpen && (
-              <div className="user-dropdown">
-                <div className="dropdown-header">
-                  <div className="dropdown-name">{user.displayName || "User"}</div>
-                  <div className="dropdown-email">{user.email}</div>
-                </div>
-                <a href="/chat" className="dropdown-item">
-  <MessageCircle size={14} strokeWidth={1.5} /> Open Chat
-</a>
-<a href="/survey" className="dropdown-item">
-  <UserIcon size={14} strokeWidth={1.5} /> Edit Profile
-</a>
-<button className="dropdown-item danger" onClick={handleSignOut}>
-  <LogOut size={14} strokeWidth={1.5} /> Sign Out
-</button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <a href="/login" className="nav-cta">Login</a>
-        )}
-      </nav>
 
       <div className="page">
         {/* ── PAGE HEADER ── */}
@@ -488,7 +460,9 @@ export default function DashboardPage() {
         {!profile ? (
           /* ── NO PROFILE STATE ── */
           <div className="dash-card no-profile fade-up-1">
-            <div style={{ fontSize: "3rem", marginBottom: 16 }}>📋</div>
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
+              <ClipboardList size={48} color="rgba(255,255,255,0.4)" />
+            </div>
             <h2>No profile found</h2>
             <p>Complete your health survey to unlock your personalised dashboard.</p>
             <a href="/survey" className="edit-btn">Complete Survey →</a>
@@ -598,6 +572,9 @@ export default function DashboardPage() {
 <a href="/survey" className="edit-btn" style={{ marginTop: 0 }}>
   <UserIcon size={14} strokeWidth={1.5} /> Edit Profile
 </a>
+<button className="edit-btn danger" style={{ marginTop: 0, border: "1px solid rgba(248,113,113,0.3)", color: "#fca5a5", background: "rgba(248,113,113,0.1)" }} onClick={handleFindClinics}>
+  <MapPin size={14} strokeWidth={1.5} /> Find Nearby Care
+</button>
               </div>
             </div>
 

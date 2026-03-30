@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useState, useEffect } from "react";
+import { Stethoscope, AlertTriangle } from "lucide-react";
 import { initializeApp, getApps } from "firebase/app";
 import {
     getAuth,
@@ -163,19 +164,12 @@ export default function LoginPage() {
         @keyframes float1 { to { transform: translate(100px,80px); } }
         @keyframes float2 { to { transform: translate(-80px,-100px); } }
         @keyframes float3 { to { transform: translate(60px,-60px); } }
+        
+        /* Focus styles for keyboard navigation */
+        *:focus-visible { outline: 2px solid rgba(124,58,237,0.8); outline-offset: 2px; }
 
-        nav {
-          position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 20px 48px;
-          backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--border);
-          background: rgba(6,6,14,0.6);
-        }
-        .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: #fff; text-decoration: none; }
-        .nav-logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--violet), var(--cyan)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 14px rgba(124,58,237,0.4); }
-        .nav-back { font-size: 0.78rem; color: var(--muted); text-decoration: none; transition: color 0.2s; display: flex; align-items: center; gap: 6px; }
-        .nav-back:hover { color: #fff; }
+
+
 
         .page { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; padding: 100px 24px 60px; }
 
@@ -198,7 +192,7 @@ export default function LoginPage() {
         .card-title em { font-style: italic; background: linear-gradient(135deg,#a78bfa,#60a5fa,#f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .card-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 32px; line-height: 1.55; }
 
-        .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 14px; color: rgba(255,255,255,0.8); font-family: 'Sora',sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.25s; margin-bottom: 24px; }
+        .btn-google { min-height: 44px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 14px; color: rgba(255,255,255,0.8); font-family: 'Sora',sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.25s; margin-bottom: 24px; }
         .btn-google:hover:not(:disabled) { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); color: #fff; }
         .btn-google:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
@@ -208,14 +202,14 @@ export default function LoginPage() {
         .divider span { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
 
         .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 8px; }
-        .form-input { width: 100%; padding: 13px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; color: #fff; font-family: 'Sora',sans-serif; font-size: 0.88rem; outline: none; transition: all 0.2s; }
+        .form-label { display: block; font-size: 0.72rem; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 8px; cursor: pointer; }
+        .form-input { min-height: 44px; width: 100%; padding: 13px 16px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; color: #fff; font-family: 'Sora',sans-serif; font-size: 0.88rem; outline: none; transition: all 0.2s; }
         .form-input::placeholder { color: rgba(255,255,255,0.2); }
         .form-input:focus { border-color: rgba(124,58,237,0.55); background: rgba(124,58,237,0.05); box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
 
         .error-msg { display: flex; align-items: center; gap: 8px; padding: 11px 15px; background: rgba(232,121,160,0.1); border: 1px solid rgba(232,121,160,0.25); border-radius: 10px; font-size: 0.78rem; color: #f9a8d4; margin-bottom: 16px; animation: fadeUp 0.3s ease both; }
 
-        .btn-primary { width: 100%; padding: 14px 20px; background: linear-gradient(135deg,var(--violet),var(--indigo)); border: none; border-radius: 14px; color: #fff; font-family: 'Sora',sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 20px rgba(124,58,237,0.4); margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { min-height: 44px; width: 100%; padding: 14px 20px; background: linear-gradient(135deg,var(--violet),var(--indigo)); border: none; border-radius: 14px; color: #fff; font-family: 'Sora',sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 20px rgba(124,58,237,0.4); margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(124,58,237,0.55); }
         .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
@@ -233,7 +227,6 @@ export default function LoginPage() {
         @keyframes fadeUp { from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);} }
 
         @media (max-width: 480px) {
-          nav { padding: 14px 16px; }
           .page { padding: 80px 16px 40px; }
           .card { padding: 32px 22px 30px; border-radius: 20px; }
           .card-title { font-size: 1.6rem; }
@@ -241,17 +234,11 @@ export default function LoginPage() {
         }
       `}</style>
 
-            <div className="blobs">
+            <div className="blobs" aria-hidden="true">
                 <div className="blob blob-1" /><div className="blob blob-2" /><div className="blob blob-3" />
             </div>
 
-            <nav>
-                <a className="nav-logo" href="./">
-                    <div className="nav-logo-icon">🩺</div>
-                    CureMe AI
-                </a>
-                <a className="nav-back" href="./">← Back to home</a>
-            </nav>
+
 
             <main className="page">
                 <div className="card">
@@ -282,12 +269,13 @@ export default function LoginPage() {
 
                     <div className="divider"><span>or</span></div>
 
-                    {error && <div className="error-msg"><span>⚠</span> {error}</div>}
+                    {error && <div className="error-msg" role="alert" aria-live="polite"><span><AlertTriangle size={16} /></span> {error}</div>}
 
                     <form onSubmit={handleEmailAuth}>
                         <div className="form-group">
-                            <label className="form-label">Email Address</label>
+                            <label className="form-label" htmlFor="email-input">Email Address</label>
                             <input
+                                id="email-input"
                                 className="form-input"
                                 type="email"
                                 placeholder="you@example.com"
@@ -297,8 +285,9 @@ export default function LoginPage() {
                             />
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Password</label>
+                            <label className="form-label" htmlFor="password-input">Password</label>
                             <input
+                                id="password-input"
                                 className="form-input"
                                 type="password"
                                 placeholder={mode === "signup" ? "Min. 6 characters" : "Your password"}
@@ -333,7 +322,7 @@ export default function LoginPage() {
             </main>
 
             <footer>
-                <span className="footer-logo">🩺 CureMe AI</span>
+                <span className="footer-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Stethoscope size={16} /> CureMe AI</span>
                 <p className="footer-note">For informational purposes only · Not a substitute for professional medical advice</p>
             </footer>
         </>

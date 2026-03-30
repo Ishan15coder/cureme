@@ -1,121 +1,134 @@
-# 🩺 CureMe AI
+# CureMe AI — Your Intelligent Indian Health Companion
 
-CureMe AI is a personalised health companion web app that provides warm, knowledgeable guidance tailored to a user's medical profile and condition. Users sign up, complete a health survey, and can then ask questions about symptoms, diet, medication, and daily habits — receiving clear, caring, non-alarming responses powered by Cohere AI.
+> **For informational purposes only. Not a substitute for professional medical advice.**
 
----
-
-✨ Features
-
-Personalised Health Profile — 3-step survey collects age, gender, height, weight, health issues, medications, and allergies
-BMI-Aware Responses — BMI is calculated automatically and factored into every AI response
-Medication & Allergy Safety — AI never suggests anything that conflicts with the user's allergies or medications
-Condition-Aware Chat — Responses tailored to Diabetes, PCOS, Hypertension, Obesity, or General Health
-Health Dashboard — Visual BMI gauge, health score ring, and profile summary with body metrics
-Chat History — Conversations saved per user in Firestore and restored on every sign-in
-Firebase Authentication — Email/password and Google sign-in with persistent sessions
-Edit Profile Anytime — Update health profile from the nav dropdown
-Clear Chat — Wipe conversation history with one click
-Responsive Design — Works seamlessly on desktop and mobile
-Non-Alarming Tone — Calm, caring responses that inform without causing panic
+CureMe AI is a personalised health companion built for the average Indian consumer. Powered by **Google Gemini 2.5 Flash**, it delivers context-aware, culturally grounded health guidance — adapting every response to your unique medical profile, dietary preferences, and lifestyle.
 
 ---
 
-## 🛠 Tech Stack
+## Core Features
+
+### AI Chat
+- Powered by **Google Gemini 2.5 Flash** — fast, accurate, nuanced responses
+- Fluid mobile layout (chat list defaults to full screen, switching seamlessly to chat room view)
+- Understands your **conditions, medications, BMI, and allergies** — every response is built around your profile, not a template
+- Responses include:
+  - Rich **prose explanations** with bold terms, bullet points, and Indian household remedies
+  - **Visual health cards** (colour-coded by type: tips, warnings, home remedies, metrics, diet, medication)
+  - **Nutritional values** (calories, carbs, protein, fat) where food is discussed
+- Full support for **multilingual input**: English, Hindi, Marathi, Tamil, Bengali, and more
+- **Global Dark/Light toggle** using an intelligent inversion engine saving data assets from distortion 
+
+### Food Image Analysis
+- Upload a photo of any meal directly in the chat
+- Gemini **vision AI** identifies the dish, ingredients, and approximate nutritional breakdown
+- Contextual health impact: "Does this suit my Diabetes and PCOS?"
+- **EAT / AVOID / MODIFY** recommendation based on your profile
+- Allergen risk flagging based on your registered allergies
+
+### Voice Navigation & Voice Typing
+- Global **hands-free voice navigation** — say "Open Chat", "Show my plan", "Check symptoms" to navigate the entire app
+- **Voice typing** in chat — microphone button transcribes speech directly into the input field before sending
+- Tuned for **Indian English** (`en-IN` speech model)
+- Privacy-first: all speech recognition is browser-native, nothing is sent to external servers
+
+### Weekly Health Plans
+- Generates a comprehensive **7-day weekly schedule** formatted beautifully in a premium two-column dashboard
+- Tailor made dynamically to your:
+  - BMI and weight goals
+  - Active conditions (Diabetes, PCOS, Hypertension, Obesity)
+  - Dietary preference: Strictly **Veg** or **Non-Veg** Indian cuisine
+- Diet and Workout toggles dynamically update your active focus
+- **Export as PDF** instantly
+
+### Symptom Checker
+- Describe your symptoms in natural language
+- AI triages to: **Emergency / See Doctor Soon / Monitor / Self-Care**
+- Returns: Possible causes, what to watch for, do now, avoid
+
+### Geolocation — Free 10km Nearby Care Mapping
+- Click Find Nearby Care navigating you to a fully built-in Leaflet Map canvas
+- Driven by a 10km radius geolocation fetch against the strictly open source **OpenStreetMap Overpass API** (Free, no keys needed)
+- Visual numbered map plotting to track **Medical Centers, Doctors, Pharmacies, and Clinics**.
+- Contains interactive Call buttons mapped to available node phone numbers.
+
+### Indian Multilingual Support
+- Language picker in the navbar (persisted across the session via localStorage)
+- Supported: English, Hindi, Marathi, Tamil, Telugu, Bengali, Gujarati, Kannada, Punjabi, Odia
+- AI responds natively in the selected language's regional script
+
+---
+
+## Tech Stack
 
 | Layer | Technology |
-|---|---|
-| Framework | [Next.js](https://nextjs.org/) (App Router) |
-| Language | TypeScript |
-| AI | [Cohere](https://cohere.com/) |
-| Auth | [Firebase Authentication](https://firebase.google.com/) |
-| Database | [Cloud Firestore](https://firebase.google.com/products/firestore) |
-| Icons | [Lucide React](https://lucide.dev/) |
-| Deployment | [Netlify](https://www.netlify.com/) |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) |
+| AI Engine | Google Gemini 2.5 Flash |
+| Auth & Database | Firebase (Auth + Firestore) |
+| Voice | Browser Web Speech API (`webkitSpeechRecognition`) |
+| Icons | Lucide React |
+| Fonts | Sora + DM Serif Display (Google Fonts) |
+| Styling | Vanilla CSS-in-JS (inline `<style>` blocks) |
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- A Cohere API key
-- A Firebase project with Authentication and Firestore enabled
-
-📁 Project Structure
+## Project Structure
 
 ```
-cureme-ai/
+cureme/
 ├── app/
-│   ├── page.tsx              # Landing page (auth-aware nav)
-│   ├── chat/
-│   │   └── page.tsx          # Chat interface with profile-aware AI
-│   ├── login/
-│   │   └── page.tsx          # Authentication (email + Google)
-│   ├── survey/
-│   │   └── page.tsx          # 3-step health profile survey
-│   └── dashboard/
-│       └── page.tsx          # Health dashboard with BMI gauge
+│   ├── page.tsx          # Landing page (features, how-it-works)
+│   ├── layout.tsx        # Root layout + VoiceNavigator
+│   ├── chat/page.tsx     # AI chat companion with image analysis
+│   ├── plan/page.tsx     # 7-day AI meal & workout planner
+│   ├── symptoms/page.tsx # Symptom checker with geolocation
+│   ├── dashboard/page.tsx
+│   ├── login/page.tsx
+│   └── survey/page.tsx
+├── components/
+│   ├── Navbar.tsx
+│   └── VoiceNavigator.tsx  # Global floating voice nav
 ├── lib/
-│   └── cohere.ts             # Cohere API integration
-├── public/
-└── README.md
-
----
-
-## 🗄 Firestore Data Structure
-
-```
-firestore/
-├── profiles/
-│   └── {uid}/
-│       ├── age
-│       ├── gender
-│       ├── heightCm
-│       ├── weightKg
-│       ├── healthIssues
-│       ├── medications
-│       ├── allergies
-│       └── updatedAt
-└── chats/
-    └── {uid}/
-        └── messages/
-            └── {messageId}/
-                ├── role        # "user" | "assistant"
-                ├── content
-                └── timestamp
+│   └── gemini.js           # Gemini API wrapper (text + image)
+└── public/
 ```
 
 ---
 
----
+## Getting Started
 
-## 🔄 User Flow
+```bash
+# Install dependencies
+npm install
 
+# Run dev server
+npm run dev
+
+# Build for production
+npm run build
 ```
-Sign Up → Health Survey (3 steps) → Chat
-Sign In → Chat (survey skipped if already completed)
-Chat Nav → Edit Profile → Update survey → Back to Chat
-Chat Nav → Clear Chat → Wipes conversation history
+
+Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## API Keys
+
+> **Note:** API keys are currently hardcoded for development. Before deploying to production, move them to `.env.local`:
+
+```env
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_key
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
 ```
 
 ---
 
-## 🌐 Deployment
+## Health Disclaimer
 
-This project is deployed on **Netlify**. Every push to the `main` branch triggers an automatic production deployment.
-
-Make sure all environment variables are configured in your Netlify project settings under **Site Settings → Environment Variables**.
-
----
-
-## ⚠️ Disclaimer
-
-CureMe AI is for **informational purposes only** and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider for personalised medical guidance.
-
----
-
-## 👥 Team
-
-This is a private team project. For access or contributions, please contact the project owner directly.
+CureMe AI is designed to **supplement**, not replace, professional medical care. All responses are for informational purposes only. Always consult a qualified healthcare provider for diagnosis and treatment.

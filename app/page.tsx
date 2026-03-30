@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Droplets, Flower2, Heart, Scale, Sparkles, Brain, MessageCircle, Shield, Zap, Stethoscope,Search } from "lucide-react";
+import { Droplets, Flower2, Heart, Scale, Sparkles, Brain, MessageCircle, Shield, Zap, Stethoscope, Search, LogOut, CheckCircle, Info, Mic, Camera, Calendar, MapPin } from "lucide-react";
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 
@@ -32,8 +32,8 @@ export default function LandingPage() {
         setToast({
           type: "success",
           message: isNew
-            ? `Welcome to CureMe, ${u.displayName || u.email}! 🎉`
-            : `Welcome back, ${u.displayName?.split(" ")[0] || u.email?.split("@")[0]}! 👋`,
+            ? `Welcome to CureMe, ${u.displayName || u.email}!`
+            : `Welcome back, ${u.displayName?.split(" ")[0] || u.email?.split("@")[0]}!`,
         });
         sessionStorage.removeItem("cureme_just_authed");
         sessionStorage.removeItem("cureme_is_new");
@@ -83,63 +83,7 @@ export default function LandingPage() {
     return u.email?.[0]?.toUpperCase() ?? "?";
   };
 
-  // ── Shared auth UI (used in both desktop list-item and mobile div) ──────────
-  const UserMenu = ({ mobile = false }: { mobile?: boolean }) => {
-    if (!authReady) {
-      return <div className="nav-auth-placeholder" />;
-    }
 
-    if (user) {
-      // Logged in — mobile shows simple "Open Chat" button
-      if (mobile) {
-        return (
-          <a href="./chat" className="nav-cta">Open Chat ↗</a>
-        );
-      }
-
-      // Logged in — desktop shows avatar dropdown
-      return (
-        <div className="user-menu">
-          <button className="user-avatar-btn" onClick={() => setDropdownOpen((o) => !o)}>
-            {user.photoURL ? (
-              <img src={user.photoURL} alt="avatar" className="user-photo" />
-            ) : (
-              <div className="user-avatar-circle">{getInitials(user)}</div>
-            )}
-            <span className="user-name">
-              {user.displayName?.split(" ")[0] || user.email?.split("@")[0]}
-            </span>
-            <svg className={`user-chevron ${dropdownOpen ? "open" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-
-          {dropdownOpen && (
-            <div className="user-dropdown">
-              <div className="dropdown-header">
-                <div className="dropdown-name">{user.displayName || "User"}</div>
-                <div className="dropdown-email">{user.email}</div>
-              </div>
-              <a href="./chat" className="dropdown-item">
-                <span className="dropdown-item-icon">💬</span> Open Chat
-              </a>
-              <button className="dropdown-item danger" onClick={handleSignOut}>
-                <span className="dropdown-item-icon">↩</span> Sign Out
-              </button>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // Logged out — show Login + Open App on both desktop and mobile
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <a href="./login" className="nav-login-ghost">Login</a>
-        <a href="./chat" className="nav-cta">Open App ↗</a>
-      </div>
-    );
-  };
   return (
     <>
       <title>{`CureMe AI — Your AI Health Companion`}</title>
@@ -164,6 +108,9 @@ export default function LandingPage() {
   @keyframes float2 { to { transform: translate(-80px,-100px); } }
   @keyframes float3 { to { transform: translate(60px,-60px); } }
 
+  /* Focus styles for keyboard navigation */
+  *:focus-visible { outline: 2px solid rgba(124,58,237,0.8); outline-offset: 2px; }
+
   /* NAV */
   nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 20px 48px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); background: rgba(6,6,14,0.6); }
   .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: #fff; text-decoration: none; }
@@ -171,9 +118,9 @@ export default function LandingPage() {
   .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
   .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.04em; transition: color 0.2s; }
   .nav-links a:hover { color: #fff; }
-  .nav-cta { padding: 9px 22px; background: linear-gradient(135deg, var(--violet), var(--indigo)); border-radius: 10px; color: #fff !important; font-weight: 600 !important; font-size: 0.8rem !important; box-shadow: 0 4px 14px rgba(124,58,237,0.4); transition: all 0.2s !important; text-decoration: none; }
+  .nav-cta { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 9px 22px; background: linear-gradient(135deg, var(--violet), var(--indigo)); border-radius: 10px; color: #fff !important; font-weight: 600 !important; font-size: 0.8rem !important; box-shadow: 0 4px 14px rgba(124,58,237,0.4); transition: all 0.2s !important; text-decoration: none; }
   .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.55) !important; }
-  .nav-login-ghost { padding: 9px 18px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: rgba(255,255,255,0.65) !important; font-size: 0.8rem !important; font-weight: 500 !important; text-decoration: none; transition: all 0.2s; }
+  .nav-login-ghost { min-height: 44px; display: inline-flex; align-items: center; padding: 9px 18px; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: rgba(255,255,255,0.65) !important; font-size: 0.8rem !important; font-weight: 500 !important; text-decoration: none; transition: all 0.2s; }
   .nav-login-ghost:hover { border-color: rgba(255,255,255,0.3) !important; color: #fff !important; background: rgba(255,255,255,0.04); }
 
   /* mobile auth slot — hidden on desktop, shown on mobile */
@@ -185,7 +132,7 @@ export default function LandingPage() {
 
   /* USER MENU */
   .user-menu { position: relative; }
-  .user-avatar-btn { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.8); font-size: 0.8rem; font-weight: 500; font-family: 'Sora', sans-serif; }
+  .user-avatar-btn { min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.8); font-size: 0.8rem; font-weight: 500; font-family: 'Sora', sans-serif; }
   .user-avatar-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(124,58,237,0.4); }
   .user-avatar-circle { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--cyan)); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #fff; flex-shrink: 0; }
   .user-photo { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -198,7 +145,7 @@ export default function LandingPage() {
   .dropdown-header { padding: 12px 14px 10px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
   .dropdown-name { font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .dropdown-email { font-size: 0.7rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Sora', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+  .dropdown-item { min-height: 44px; display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Sora', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
   .dropdown-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
   .dropdown-item.danger:hover { background: rgba(232,121,160,0.1); color: #f9a8d4; }
   .dropdown-item-icon { font-size: 14px; opacity: 0.7; }
@@ -222,9 +169,9 @@ export default function LandingPage() {
   .hero-title em { font-style: italic; background: linear-gradient(135deg,#a78bfa,#60a5fa,#f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   .hero-sub { max-width: 520px; margin: 24px auto 48px; font-size: 1rem; color: var(--muted); font-weight: 400; line-height: 1.7; animation: fadeUp 0.7s 0.2s ease both; }
   .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.7s 0.3s ease both; }
-  .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: linear-gradient(135deg,var(--violet),var(--indigo)); border-radius: 14px; color: #fff; font-family: 'Sora',sans-serif; font-size: 0.9rem; font-weight: 600; text-decoration: none; box-shadow: 0 6px 24px rgba(124,58,237,0.45); transition: all 0.25s; cursor: pointer; border: none; }
+  .btn-primary { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: linear-gradient(135deg,var(--violet),var(--indigo)); border-radius: 14px; color: #fff; font-family: 'Sora',sans-serif; font-size: 0.9rem; font-weight: 600; text-decoration: none; box-shadow: 0 6px 24px rgba(124,58,237,0.45); transition: all 0.25s; cursor: pointer; border: none; }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(124,58,237,0.6); }
-  .btn-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: transparent; border: 1px solid var(--border); border-radius: 14px; color: rgba(255,255,255,0.7); font-family: 'Sora',sans-serif; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: all 0.25s; cursor: pointer; }
+  .btn-ghost { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; background: transparent; border: 1px solid var(--border); border-radius: 14px; color: rgba(255,255,255,0.7); font-family: 'Sora',sans-serif; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: all 0.25s; cursor: pointer; }
   .btn-ghost:hover { border-color: rgba(255,255,255,0.25); color: #fff; background: rgba(255,255,255,0.04); }
   .hero-visual { margin-top: 80px; width: 100%; max-width: 700px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05); animation: fadeUp 0.8s 0.4s ease both; }
   .hero-visual-bar { display: flex; align-items: center; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--faint); background: rgba(255,255,255,0.02); }
@@ -239,8 +186,8 @@ export default function LandingPage() {
   .hv-avatar.ai { background: linear-gradient(135deg,var(--violet),var(--cyan)); }
   .hv-avatar.user { background: rgba(255,255,255,0.1); }
   .hv-bubble { padding: 10px 15px; border-radius: 16px; font-size: 0.8rem; line-height: 1.55; max-width: 75%; }
-  .hv-bubble.ai { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); border-bottom-left-radius: 4px; }
-  .hv-bubble.user { background: linear-gradient(135deg,var(--violet),var(--indigo)); color: #fff; border-bottom-right-radius: 4px; text-align: right; }
+  .hv-bubble.ai { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); border-bottom-left-radius: 4px; text-align: left; }
+  .hv-bubble.user { background: linear-gradient(135deg,var(--violet),var(--indigo)); color: #fff; border-bottom-right-radius: 4px; text-align: left; }
 
   .features { padding: 100px 24px; }
   .section-label { text-align: center; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #a78bfa; margin-bottom: 16px; }
@@ -256,7 +203,7 @@ export default function LandingPage() {
   .feature-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
   .conditions { padding: 80px 24px; background: linear-gradient(180deg,transparent,rgba(124,58,237,0.04) 50%,transparent); }
   .conditions-grid { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; max-width: 700px; margin: 0 auto; }
-  .condition-pill { display: flex; align-items: center; gap: 10px; padding: 14px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; font-size: 0.88rem; font-weight: 500; color: rgba(255,255,255,0.75); cursor: pointer; transition: all 0.2s; }
+  .condition-pill { min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 14px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; font-size: 0.88rem; font-weight: 500; color: rgba(255,255,255,0.75); cursor: pointer; transition: all 0.2s; }
 .condition-pill:hover { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.4); color: #fff; transform: scale(1.04); }
   .how { padding: 100px 24px; }
   .how-steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 0; max-width: 900px; margin: 0 auto; position: relative; }
@@ -301,10 +248,14 @@ export default function LandingPage() {
   .hero-badge { font-size: 0.65rem; padding: 5px 12px; }
   .hero-title { font-size: clamp(2.2rem, 10vw, 3rem); line-height: 1.08; }
   .hero-sub { font-size: 0.85rem; margin: 16px auto 28px; max-width: 100%; }
-  .hero-actions { flex-direction: column; align-items: center; width: 100%; gap: 10px; }
-  .btn-primary, .btn-ghost { width: 100%; justify-content: center; padding: 13px 24px; font-size: 0.88rem; border-radius: 12px; }
-  .hero-visual { display: none; }
-
+  .hero-actions { flex-direction: column; align-items: center; width: 100%; gap: 12px; }
+  .btn-primary, .btn-ghost, .btn-symptom { width: 100%; justify-content: center; padding: 14px 24px !important; font-size: 0.88rem !important; border-radius: 12px; box-sizing: border-box; }
+  .hero-visual { display: block; margin-top: 40px; border-radius: 16px; }
+  .hero-visual-chat { padding: 16px 14px 20px; gap: 12px; }
+  .hv-msg { gap: 8px; }
+  .hv-bubble { font-size: 0.72rem; max-width: 82%; padding: 10px 14px; line-height: 1.5; }
+  .hv-avatar { width: 22px; height: 22px; }
+  .hv-avatar svg { width: 11px; height: 11px; }
   /* FEATURES */
   .features { padding: 60px 16px; }
   .features-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -351,6 +302,7 @@ export default function LandingPage() {
   .toast { font-size: 0.75rem; padding: 11px 18px; max-width: 90vw; white-space: normal; text-align: center; bottom: 16px; }
 }
   .btn-symptom {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -387,79 +339,58 @@ export default function LandingPage() {
 }
 `}</style>
 
-      <div className="blobs">
+      <div className="blobs" aria-hidden="true">
         <div className="blob blob-1" /><div className="blob blob-2" /><div className="blob blob-3" />
       </div>
 
       {toast && (
         <div className={`toast ${toast.type}`}>
-          <span>{toast.type === "success" ? "✓" : "ℹ"}</span>
+          <span>{toast.type === "success" ? <CheckCircle size={14} /> : <Info size={14} />}</span>
           {toast.message}
         </div>
       )}
 
-      {/* ── NAV ── */}
-      <nav>
 
-        <a className="nav-logo" href="#">
-          <div className="nav-logo-icon">🩺</div>
-          CureMe AI
-        </a>
-
-        {/* Desktop nav */}
-        <ul className="nav-links">
-          <li><a href="#features">Features</a></li>
-          <li><a href="#how">How it works</a></li>
-          <li><a href="/dashboard">Dashboard</a></li>
-           <li><a href="/symptoms">Symptoms</a></li>
-          <li><UserMenu /></li>
-        </ul>
-
-        {/* Mobile nav */}
-        <div className="mobile-nav-auth">
-          <UserMenu mobile />
-        </div>
-      </nav>
 
       {/* ── HERO ── */}
       <section className="hero">
-        
-        
+
+
         <h1 className="hero-title">Your health,<br /><em>understood.</em></h1>
         <p className="hero-sub">
-          Your personal AI health companion that knows your conditions, medications, and allergies — and gives advice that's actually tailored to you.
+          Aapka apna AI health companion. It remembers your conditions, medications, and allergies to give you practical, everyday advice tailored for your household.
         </p>
-          <div className="hero-actions">
-    <a href="./chat" className="btn-primary">Start Chatting →</a>
-    <a href="/symptoms" className="btn-symptom">
-  <Search size={16} strokeWidth={1.5} /> Check Symptoms
-</a>
-    
-  </div>
+        <div className="hero-actions">
+          <a href="./chat" className="btn-primary">Start Chatting →</a>
+          <a href="/symptoms" className="btn-symptom">
+            <Search size={16} strokeWidth={1.5} /> Check Symptoms
+          </a>
+
+        </div>
         <div className="hero-visual">
           <div className="hero-visual-bar">
             <div className="hv-dot" /><div className="hv-dot" /><div className="hv-dot" />
             <span className="hv-label">CureMe AI — Health Chat</span>
           </div>
           <div className="hero-visual-chat">
-            <div className="hv-msg user"><div className="hv-avatar user">
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
-  </svg>
-</div><div className="hv-bubble user">What foods should I avoid with diabetes?</div></div>
-            <div className="hv-msg"><div className="hv-avatar ai">
-  <Stethoscope size={13} strokeWidth={1.5} color="#fff" />
-</div><div className="hv-bubble ai"><strong>Foods to limit with Diabetes:</strong><br />Avoid refined carbs like white bread and sugary drinks. Focus on whole grains, lean proteins, and fibre-rich vegetables. <em>Always consult your doctor for personalized advice.</em></div></div>
-            <div className="hv-msg user"><div className="hv-avatar user">
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-    <circle cx="12" cy="7" r="4"/>
-  </svg>
-</div><div className="hv-bubble user">Any morning routine tips?</div></div>
-            <div className="hv-msg"><div className="hv-avatar ai">
-  <Stethoscope size={13} strokeWidth={1.5} color="#fff" />
-</div><div className="hv-bubble ai">Start with a 10-min walk, check blood sugar, eat a balanced breakfast with protein. Hydrate well. <em>Always consult your doctor for personalized advice.</em></div></div>
+            <div className="hv-msg user"><div className="hv-avatar user" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div><div className="hv-bubble user">What’s a simple dinner for a diabetic?</div></div>
+            <div className="hv-msg"><div className="hv-avatar ai" aria-hidden="true">
+              <Stethoscope size={13} strokeWidth={1.5} color="#fff" />
+            </div><div className="hv-bubble ai"><strong>Smart Dinner Hacks:</strong><br />Skip the white rice and try bajra roti with an extra bowl of dal. Add a simple cucumber salad! <em>Always consult your doctor for personalized advice.</em></div></div>
+            <div className="hv-msg user"><div className="hv-avatar user" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div><div className="hv-bubble user">Mujhe thodi khasi (cough) hai, kya karu?</div></div>
+            <div className="hv-msg"><div className="hv-avatar ai" aria-hidden="true">
+              <Stethoscope size={13} strokeWidth={1.5} color="#fff" />
+            </div><div className="hv-bubble ai">Warm water with a pinch of haldi (turmeric) and some steam inhalation can give quick relief. If it lasts &gt;3 days, please see a doctor. <em>Always consult your doctor for personalized advice.</em></div></div>
           </div>
         </div>
       </section>
@@ -469,26 +400,36 @@ export default function LandingPage() {
         <p className="section-label reveal">What we offer</p>
         <h2 className="section-title reveal">Built around <em style={{ fontStyle: 'italic', color: '#a78bfa' }}>you</em>, not just your condition</h2>
         <div className="features-grid">
-         <div className="feature-card reveal">
-  <div className="feature-icon violet"><Brain size={22} strokeWidth={1.5} color="#a78bfa" /></div>
-  <h3 className="feature-title">Knows Your Full Profile</h3>
-  <p className="feature-desc">Age, BMI, medications, allergies — every response is built around your unique health picture, not a generic condition.</p>
-</div>
-<div className="feature-card reveal">
-  <div className="feature-icon cyan"><MessageCircle size={22} strokeWidth={1.5} color="#60a5fa" /></div>
-  <h3 className="feature-title">Medication-Aware</h3>
-  <p className="feature-desc">CureMe understands your current medications and never suggests anything that could cause an interaction or conflict.</p>
-</div>
-<div className="feature-card reveal">
-  <div className="feature-icon rose"><Shield size={22} strokeWidth={1.5} color="#e879a0" /></div>
-  <h3 className="feature-title">Allergy Safe</h3>
-  <p className="feature-desc">Your allergies are remembered across every conversation. Dietary advice will never include something that could harm you.</p>
-</div>
-<div className="feature-card reveal">
-  <div className="feature-icon green"><Zap size={22} strokeWidth={1.5} color="#4ade80" /></div>
-  <h3 className="feature-title">Instant & Always Available</h3>
-  <p className="feature-desc">No waiting rooms, no appointments, no cost. Get thoughtful, personalised health guidance any time of day or night.</p>
-</div>
+          <div className="feature-card reveal">
+            <div className="feature-icon violet"><Brain size={22} strokeWidth={1.5} color="#a78bfa" /></div>
+            <h3 className="feature-title">Knows Your Full Profile</h3>
+            <p className="feature-desc">Age, BMI, medications, allergies — every response is built around your unique health picture. Your conditions like Diabetes or PCOS directly shape the advice you receive.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon cyan"><MessageCircle size={22} strokeWidth={1.5} color="#60a5fa" /></div>
+            <h3 className="feature-title">AI Chat</h3>
+            <p className="feature-desc">Experience a fluid, multi-conversation chat layout with a sleek mobile design. Chat in Hindi, Marathi, Tamil, or English, complete with global Dark/Light mode toggling.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon rose"><Mic size={22} strokeWidth={1.5} color="#e879a0" /></div>
+            <h3 className="feature-title">Voice &amp; Image Intelligence</h3>
+            <p className="feature-desc">Say your symptoms out loud or upload a photo of your meal. CureMe's AI instantly identifies the dish, estimates macros, and dictates if it suits your allergies.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon green"><Calendar size={22} strokeWidth={1.5} color="#4ade80" /></div>
+            <h3 className="feature-title">Weekly Health Plans</h3>
+            <p className="feature-desc">Generate a complete 7-day Indian meal and physical activity schedule styled in a beautiful, premium two-column layout. Export easily as a PDF for offline reference.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon violet"><MapPin size={22} strokeWidth={1.5} color="#a78bfa" /></div>
+            <h3 className="feature-title">Find Nearby Care (10km)</h3>
+            <p className="feature-desc">Instantly locate nearby hospitals, clinics, and pharmacies within a 10km radius using your live location. See distance and get direct one-tap calling buttons.</p>
+          </div>
+          <div className="feature-card reveal">
+            <div className="feature-icon cyan"><Stethoscope size={22} strokeWidth={1.5} color="#60a5fa" /></div>
+            <h3 className="feature-title">Symptom Checker</h3>
+            <p className="feature-desc">Describe your symptoms in natural language and receive an instant preliminary triage – identifying whether you should see a doctor or monitor at home.</p>
+          </div>
         </div>
       </section>
 
@@ -513,17 +454,17 @@ export default function LandingPage() {
           <div className="how-step reveal">
             <div className="how-step-num">01</div>
             <h3 className="how-step-title">Build your health profile</h3>
-            <p className="how-step-desc">Tell us your age, weight, conditions, medications, and allergies once — in under 2 minutes.</p>
+            <p className="how-step-desc">Tell us your age, weight, conditions, medications, and allergies once — in under 2 minutes. Your data stays private in Firebase.</p>
           </div>
           <div className="how-step reveal">
             <div className="how-step-num">02</div>
-            <h3 className="how-step-title">Ask anything</h3>
-            <p className="how-step-desc">Type naturally — symptoms, diet, medication, or lifestyle. CureMe already knows your context.</p>
+            <h3 className="how-step-title">Ask, speak, or snap</h3>
+            <p className="how-step-desc">Type your question, use hands-free voice commands in Indian English, or upload a food photo. CureMe understands all three.</p>
           </div>
           <div className="how-step reveal">
             <div className="how-step-num">03</div>
-            <h3 className="how-step-title">Get answers built for you</h3>
-            <p className="how-step-desc">Receive advice that accounts for your BMI, allergies, and medications — not just your condition label.</p>
+            <h3 className="how-step-title">Get rich, personalised answers</h3>
+            <p className="how-step-desc">Receive structured responses with visual health cards, nutritional breakdowns, household remedies, and a 7-day meal and workout plan — all tailored to you.</p>
           </div>
         </div>
       </section>
@@ -532,7 +473,7 @@ export default function LandingPage() {
       <div className="stats">
         <div className="stats-inner">
           <div className="stat reveal">
-            <div className="stat-num">7</div>
+            <div className="stat-num">12+</div>
             <div className="stat-label">Profile data points analysed per response</div>
           </div>
           <div className="stat reveal">
@@ -540,8 +481,8 @@ export default function LandingPage() {
             <div className="stat-label">Indians living with chronic conditions</div>
           </div>
           <div className="stat reveal">
-            <div className="stat-num">24/7</div>
-            <div className="stat-label">Available — no appointments needed</div>
+            <div className="stat-num">7</div>
+            <div className="stat-label">Days covered by AI meal &amp; workout plan</div>
           </div>
           <div className="stat reveal">
             <div className="stat-num">0₹</div>
@@ -560,7 +501,7 @@ export default function LandingPage() {
       </section>
 
       <footer>
-        <div className="footer-logo">🩺 CureMe AI</div>
+        <div className="footer-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Stethoscope size={16} /> CureMe AI</div>
         <p className="footer-note">For informational purposes only · Not a substitute for professional medical advice</p>
         <div className="footer-links">
           <a href="#features">Features</a>

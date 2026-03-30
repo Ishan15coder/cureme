@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+html.light-theme {
+  filter: invert(0.92) hue-rotate(180deg);
+  background: #dedede;
+  transition: filter 0.3s ease;
+}
+html.light-theme img, 
+html.light-theme video, 
+html.light-theme .leaflet-container,
+html.light-theme .msg-avatar,
+html.light-theme div[style*="background-image"],
+html.light-theme .gnav-photo {
+  filter: invert(1.08) hue-rotate(180deg) !important;
+}

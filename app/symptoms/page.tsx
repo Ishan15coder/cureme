@@ -5,6 +5,7 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { askAI } from "@/lib/gemini";
+import { Stethoscope, AlertCircle, AlertTriangle, Eye, Home, LayoutDashboard, MessageCircle, User as UserIcon, LogOut, MapPin } from "lucide-react";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA0DHyKzIoQpQSVi2KU1AgA7mOrcxMsDiM",
@@ -49,7 +50,7 @@ const URGENCY_CONFIG: Record<UrgencyLevel, {
   color: string;
   bg: string;
   border: string;
-  icon: string;
+  icon: React.ReactNode;
 }> = {
   emergency: {
     label:    "Go to Emergency Now",
@@ -57,7 +58,7 @@ const URGENCY_CONFIG: Record<UrgencyLevel, {
     color:    "#f87171",
     bg:       "rgba(248,113,113,0.12)",
     border:   "rgba(248,113,113,0.35)",
-    icon:     "🚨",
+    icon:     <AlertCircle size={24} color="#f87171" strokeWidth={2} />,
   },
   soon: {
     label:    "See a Doctor Within 24–48 Hours",
@@ -65,7 +66,7 @@ const URGENCY_CONFIG: Record<UrgencyLevel, {
     color:    "#fb923c",
     bg:       "rgba(251,146,60,0.12)",
     border:   "rgba(251,146,60,0.35)",
-    icon:     "⚠️",
+    icon:     <AlertTriangle size={24} color="#fb923c" />,
   },
   monitor: {
     label:    "Monitor Closely",
@@ -73,7 +74,7 @@ const URGENCY_CONFIG: Record<UrgencyLevel, {
     color:    "#facc15",
     bg:       "rgba(250,204,21,0.12)",
     border:   "rgba(250,204,21,0.35)",
-    icon:     "👁",
+    icon:     <Eye size={24} color="#facc15" />,
   },
   "self-care": {
     label:    "Self-Care at Home",
@@ -81,7 +82,7 @@ const URGENCY_CONFIG: Record<UrgencyLevel, {
     color:    "#4ade80",
     bg:       "rgba(74,222,128,0.12)",
     border:   "rgba(74,222,128,0.35)",
-    icon:     "🏠",
+    icon:     <Home size={24} color="#4ade80" />,
   },
 };
 
@@ -140,6 +141,10 @@ export default function SymptomsPage() {
   const [result, setResult]       = useState<SymptomResult | null>(null);
   const [error, setError]         = useState("");
 
+  const handleFindClinics = () => {
+    window.location.href = "/nearby";
+  };
+
   // ── Auth + profile ──────────────────────────────────────────────────────────
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -192,7 +197,7 @@ export default function SymptomsPage() {
       ? (parseFloat(profile.weightKg) / Math.pow(parseFloat(profile.heightCm) / 100, 2)).toFixed(1)
       : "not calculated";
 
-    const prompt = `You are CureMe, an expert AI medical triage assistant. Analyse the symptoms and return a structured response.
+    const prompt = `You are CureMe, an expert AI medical triage assistant attuned to Indian healthcare realities. Analyse the symptoms and suggest practical, accessible remedies (e.g. ORS, Haldi, steam inhalation) alongside standard medical triage, especially for 'self-care' or 'monitor' urgencies. Return a structured response.
 
 PATIENT PROFILE:
 - Age: ${profile?.age || "not specified"}
@@ -286,6 +291,9 @@ setResult(parseResult(raw));
         @keyframes float1 { to { transform: translate(80px,60px); } }
         @keyframes float2 { to { transform: translate(-60px,-80px); } }
 
+        /* Focus styles for keyboard navigation */
+        *:focus-visible { outline: 2px solid rgba(124,58,237,0.8); outline-offset: 2px; }
+
         nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(6,6,14,0.7); }
         .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display', serif; font-size: 1.2rem; color: #fff; text-decoration: none; }
         .nav-logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, #7c3aed, #2563eb); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; box-shadow: 0 4px 14px rgba(124,58,237,0.4); }
@@ -294,7 +302,7 @@ setResult(parseResult(raw));
         .nav-links a:hover, .nav-links a.active { color: #fff; }
 
         .user-menu { position: relative; }
-        .user-avatar-btn { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.8); font-size: 0.8rem; font-weight: 500; font-family: 'Sora', sans-serif; }
+        .user-avatar-btn { min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.8); font-size: 0.8rem; font-weight: 500; font-family: 'Sora', sans-serif; }
         .user-avatar-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(124,58,237,0.4); }
         .user-avatar-circle { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #2563eb); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #fff; flex-shrink: 0; }
         .user-photo { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -305,7 +313,7 @@ setResult(parseResult(raw));
         .dropdown-header { padding: 10px 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 6px; }
         .dropdown-name { font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dropdown-email { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
-        .dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Sora', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+        .dropdown-item { min-height: 44px; display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 14px; background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Sora', sans-serif; font-size: 0.8rem; border-radius: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
         .dropdown-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
         .dropdown-item.danger:hover { background: rgba(232,121,160,0.1); color: #f9a8d4; }
 
@@ -324,10 +332,10 @@ setResult(parseResult(raw));
 
         .card { background: #0d0d1a; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 28px; margin-bottom: 20px; position: relative; overflow: hidden; }
         .card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 0% 0%, rgba(124,58,237,0.04), transparent 60%); pointer-events: none; }
-        .card-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 14px; }
+        .card-label { display: block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 14px; }
 
         .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-        .chip { padding: 6px 14px; background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.2); border-radius: 100px; font-size: 0.75rem; color: #a78bfa; cursor: pointer; transition: all 0.2s; font-family: 'Sora', sans-serif; }
+        .chip { min-height: 44px; padding: 8px 16px; background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.2); border-radius: 100px; font-size: 0.8rem; color: #a78bfa; cursor: pointer; transition: all 0.2s; font-family: 'Sora', sans-serif; }
         .chip:hover { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4); color: #c4b5fd; transform: translateY(-1px); }
 
         .textarea {
@@ -342,18 +350,18 @@ setResult(parseResult(raw));
         .textarea:focus { border-color: rgba(124,58,237,0.5); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
         .textarea::placeholder { color: rgba(255,255,255,0.2); }
 
-        .input { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-family: 'Sora', sans-serif; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+        .input { min-height: 44px; width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-family: 'Sora', sans-serif; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
         .input:focus { border-color: rgba(124,58,237,0.5); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
         .input::placeholder { color: rgba(255,255,255,0.2); }
 
         .severity-row { display: flex; gap: 10px; align-items: center; }
-        .severity-btn { flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5); font-family: 'Sora', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .severity-btn { min-height: 44px; flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5); font-family: 'Sora', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; text-align: center; }
         .severity-btn:hover { border-color: rgba(124,58,237,0.3); color: #fff; }
         .severity-btn.active { background: rgba(124,58,237,0.2); border-color: #7c3aed; color: #a78bfa; font-weight: 600; }
 
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-        .submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; border-radius: 14px; color: #fff; font-family: 'Sora', sans-serif; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 20px rgba(124,58,237,0.4); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .submit-btn { min-height: 44px; width: 100%; padding: 14px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border: none; border-radius: 14px; color: #fff; font-family: 'Sora', sans-serif; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 20px rgba(124,58,237,0.4); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(124,58,237,0.55); }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -374,7 +382,7 @@ setResult(parseResult(raw));
 
         .disclaimer { text-align: center; font-size: 0.7rem; color: rgba(255,255,255,0.2); margin-top: 24px; line-height: 1.6; }
 
-        .reset-btn { display: block; margin: 16px auto 0; padding: 10px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: rgba(255,255,255,0.4); font-family: 'Sora', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .reset-btn { min-height: 44px; display: block; margin: 16px auto 0; padding: 10px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: rgba(255,255,255,0.4); font-family: 'Sora', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
         .reset-btn:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
 
         .profile-notice { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); border-radius: 12px; font-size: 0.75rem; color: #a78bfa; margin-bottom: 20px; }
@@ -382,57 +390,28 @@ setResult(parseResult(raw));
         @media (max-width: 768px) {
           nav { padding: 14px 16px; }
           .nav-links { display: none; }
-          .page { padding: 80px 16px 60px; }
+          .page { padding: 80px 14px 60px; }
           .two-col { grid-template-columns: 1fr; }
-          .card { padding: 20px 18px; }
+          .card { padding: 18px 16px; }
+          .page-title { font-size: 1.75rem; }
+          .chip { min-height: 40px; padding: 7px 13px; font-size: 0.76rem; }
+          .severity-btn { min-height: 40px; font-size: 0.75rem; padding: 8px 4px; }
+          .urgency-banner { padding: 16px; gap: 12px; }
+          .urgency-label { font-size: 1.1rem; }
+          .submit-btn { font-size: 0.85rem; }
+        }
+        @media (max-width: 480px) {
+          .severity-row { gap: 6px; }
+          .chips { gap: 6px; }
+          .chip { padding: 6px 11px; font-size: 0.72rem; }
+          .page-title { font-size: 1.5rem; }
         }
       `}</style>
 
-      <div className="blobs">
+      <div className="blobs" aria-hidden="true">
         <div className="blob blob-1"/><div className="blob blob-2"/>
       </div>
 
-      {/* ── NAV ── */}
-      <nav>
-        <a className="nav-logo" href="/">
-          <div className="nav-logo-icon">🩺</div>
-          CureMe AI
-        </a>
-        <ul className="nav-links">
-          <li><a href="/dashboard">Dashboard</a></li>
-          <li><a href="/symptoms" className="active">Symptoms</a></li>
-          <li><a href="/chat">Chat</a></li>
-        </ul>
-        {user ? (
-          <div className="user-menu">
-            <button className="user-avatar-btn" onClick={() => setDropdownOpen(o => !o)}>
-              {user.photoURL
-                ? <img src={user.photoURL} alt="avatar" className="user-photo"/>
-                : <div className="user-avatar-circle">{getInitials(user)}</div>}
-              <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8rem" }}>
-                {user.displayName?.split(" ")[0] || user.email?.split("@")[0]}
-              </span>
-              <svg className={`user-chevron ${dropdownOpen ? "open" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            {dropdownOpen && (
-              <div className="user-dropdown">
-                <div className="dropdown-header">
-                  <div className="dropdown-name">{user.displayName || "User"}</div>
-                  <div className="dropdown-email">{user.email}</div>
-                </div>
-                <a href="/dashboard" className="dropdown-item"><span>📊</span> Dashboard</a>
-                <a href="/chat"      className="dropdown-item"><span>💬</span> Open Chat</a>
-                <a href="/survey"    className="dropdown-item"><span>👤</span> Edit Profile</a>
-                <button className="dropdown-item danger" onClick={handleSignOut}><span>↩</span> Sign Out</button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <a href="/login" style={{ padding: "8px 18px", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, color: "rgba(255,255,255,0.65)", fontSize: "0.8rem", textDecoration: "none" }}>Login</a>
-        )}
-      </nav>
 
       <div className="page">
         {/* ── HEADER ── */}
@@ -461,6 +440,7 @@ setResult(parseResult(raw));
                 ))}
               </div>
               <textarea
+                aria-label="Describe your symptoms in detail"
                 className="textarea"
                 placeholder="Describe your symptoms in detail… e.g. throbbing headache on the right side, started this morning, worse with light"
                 value={symptoms}
@@ -472,8 +452,9 @@ setResult(parseResult(raw));
             <div className="card fade-3">
               <div className="two-col" style={{ marginBottom: 20 }}>
                 <div>
-                  <p className="card-label">How long?</p>
+                  <label className="card-label" htmlFor="duration-input">How long?</label>
                   <input
+                    id="duration-input"
                     className="input"
                     type="text"
                     placeholder="e.g. 2 days, since this morning"
@@ -482,11 +463,13 @@ setResult(parseResult(raw));
                   />
                 </div>
                 <div>
-                  <p className="card-label">Severity</p>
-                  <div className="severity-row">
+                  <p className="card-label" id="severity-label">Severity</p>
+                  <div className="severity-row" role="radiogroup" aria-labelledby="severity-label">
                     {[1,2,3,4,5].map((n) => (
                       <button
                         key={n}
+                        role="radio"
+                        aria-checked={severity === n}
                         className={`severity-btn ${severity === n ? "active" : ""}`}
                         onClick={() => setSeverity(n as 1|2|3|4|5)}
                       >
@@ -501,8 +484,8 @@ setResult(parseResult(raw));
               </div>
 
               {error && (
-                <div style={{ padding: "10px 14px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 10, fontSize: "0.78rem", color: "#fca5a5", marginBottom: 16 }}>
-                  ⚠ {error}
+                <div role="alert" aria-live="polite" style={{ padding: "10px 14px", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 10, fontSize: "0.78rem", color: "#fca5a5", marginBottom: 16 }}>
+                  <AlertTriangle size={16} style={{ display: "inline", verticalAlign: "middle", marginRight: 8 }}/> {error}
                 </div>
               )}
 
@@ -601,14 +584,24 @@ setResult(parseResult(raw));
               </div>
             </div>
 
-            <button className="reset-btn" onClick={() => {
-              setResult(null);
-              setSymptoms("");
-              setDuration("");
-              setSeverity(3);
-            }}>
-              ← Check different symptoms
-            </button>
+            <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 24 }}>
+              <button 
+                className="reset-btn" 
+                style={{ margin: 0, display: "flex", alignItems: "center", gap: 8, background: "rgba(248,113,113,0.15)", color: "#fca5a5", border: "1px solid rgba(248,113,113,0.3)" }} 
+                onClick={handleFindClinics}
+              >
+                <MapPin size={16} strokeWidth={1.5} /> Find Nearby Care
+              </button>
+
+              <button className="reset-btn" style={{ margin: 0 }} onClick={() => {
+                setResult(null);
+                setSymptoms("");
+                setDuration("");
+                setSeverity(3);
+              }}>
+                ← Check different symptoms
+              </button>
+            </div>
 
             <p className="disclaimer">
               This is AI-generated triage guidance, not a medical diagnosis.<br/>

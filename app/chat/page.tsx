@@ -12,7 +12,7 @@ import {
   Circle, Droplets, Flower2, Heart, Scale, Stethoscope,
   Mic, MicOff, ImagePlus, X, Check, AlertTriangle, Activity,
   Zap, Leaf, Shield, Flame, Utensils, Pill, Info, Star, Thermometer,
-  Plus, Trash2, MessageSquare, PenSquare, ChevronDown, ArrowLeft
+  Plus, Trash2, MessageSquare, PenSquare, ChevronDown, ArrowLeft, MapPin
 } from "lucide-react";
 
 const firebaseConfig = {
@@ -434,21 +434,41 @@ The user has also uploaded a food image. Please carefully analyze it:
         .conv-item {
           display: flex;
           align-items: center;
-          gap: 9px;
-          padding: 9px 11px;
-          border-radius: 11px;
+          gap: 12px;
+          padding: 12px 14px;
+          border-radius: 12px;
           cursor: pointer;
-          transition: all 0.15s;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           border: 1px solid transparent;
         }
         .conv-item:hover {
-          background: rgba(255,255,255,0.04);
-          border-color: rgba(255,255,255,0.05);
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.07);
         }
         .conv-item.active {
-          background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(79,70,229,0.12));
-          border-color: rgba(124,58,237,0.22);
+          background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.15));
+          border-color: rgba(124,58,237,0.25);
+        }
+        .nearby-link {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 16px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+          border: 1px solid rgba(34, 197, 94, 0.2);
+          color: #4ade80;
+          font-size: 0.85rem;
+          font-weight: 600;
+          text-decoration: none;
+          margin-bottom: 24px;
+          transition: all 0.2s;
+        }
+        .nearby-link:hover {
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1));
+          border-color: rgba(34, 197, 94, 0.4);
+          transform: translateY(-1px);
         }
         .conv-item.active::before {
           content: '';
@@ -463,8 +483,8 @@ The user has also uploaded a food image. Please carefully analyze it:
         .conv-item:hover .conv-icon { color: rgba(255,255,255,0.5); }
         .conv-title {
           flex: 1;
-          font-size: 0.79rem;
-          color: rgba(255,255,255,0.5);
+          font-size: 0.88rem;
+          color: rgba(255,255,255,0.6);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -903,8 +923,13 @@ The user has also uploaded a food image. Please carefully analyze it:
         {/* ── SIDEBAR ── */}
         <aside className="chat-sidebar">
           <div className="sidebar-top">
+            <a href="/nearby" className="nearby-link">
+              <MapPin size={18} strokeWidth={2} />
+              Find Nearby Care
+            </a>
+
             <button className="new-chat-btn" onClick={() => startNewConversation()}>
-              <PenSquare size={15} strokeWidth={2} />
+              <Plus size={18} strokeWidth={2} />
               New Chat
             </button>
           </div>
